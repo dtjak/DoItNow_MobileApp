@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "335206650251",
+    "project_id": "doitnow-fca79",
+    "storage_bucket": "doitnow-fca79.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335206650251:android:3996639d58c50b0e9d5f8e",
+        "android_client_info": {
+          "package_name": "com.doitnow.doitnow_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDPbxnw3f-x9gDvj9s_8OerUYWAoQWW_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
