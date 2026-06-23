@@ -63,8 +63,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             'created_at': FieldValue.serverTimestamp(),
           });
 
+      // Sign out since createUserWithEmailAndPassword automatically signs the user in
+      await FirebaseAuth.instance.signOut();
+
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registrasi berhasil! Silakan masuk dengan akun baru Anda.'),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       setState(() {
         switch (e.code) {

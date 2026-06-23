@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -11,6 +13,50 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isNotificationEnabled = true;
   bool _isDarkModeEnabled = false;
+
+  String _name = 'Loading...';
+  String _email = 'Loading...';
+  String? _photoUrl;
+  String _phone = '';
+  String _bio = '';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (doc.exists) {
+          final data = doc.data();
+          if (data != null) {
+            setState(() {
+              _name = data['name'] ?? '';
+              _email = data['email'] ?? '';
+              _photoUrl = data['photo_url'];
+              _phone = data['phone'] ?? '';
+              _bio = data['bio'] ?? '';
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading profile: $e');
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,33 +78,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          top: 24.0,
-          bottom: 100.0, // Space for custom bottom nav
-        ),
-        child: Column(
-          children: [
-            _buildUserSection(),
-            const SizedBox(height: 24),
-            _buildSettingsSection(context),
-            const SizedBox(height: 32),
-            _buildLogoutSection(),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 24.0,
+                bottom: 100.0, // Space for custom bottom nav
+              ),
+              child: Column(
+                children: [
+                  _buildUserSection(),
+                  const SizedBox(height: 24),
+                  _buildSettingsSection(context),
+                  const SizedBox(height: 32),
+                  _buildLogoutSection(),
+                ],
+              ),
+            ),
       bottomNavigationBar: _buildBottomNavBar(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/add_task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        elevation: 8,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -86,40 +125,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 height: 96,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.surfaceContainer, width: 4),
-                  image: const DecorationImage(
-                    image: NetworkImage(
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuAnPK5sf3toF6jRhlHSSSJ_5GE2LPH3b1yijfOIp5i6TEEeUP5KSRXfev9SofWZKeFXP1bE8otSGeILKlzwrBu4-XkGQHZn80FrAVch-DUJ_X0rEF-UVNTEl5_G4Um4_DfIAV_k6f8Z49xKl7hLHBhCM5Y1pmJ1H8z1r8mDeN2GUgP6qh_Vq-LiywgTT_V3NBLpxDyn9qON4ng6LqKA6J3dTviPgP-PVRXfJorEgyLH3LTaYxL6AXiXYD9zzkSmVVFi1CpC7GbxvQ',
-                    ),
-                    fit: BoxFit.cover,
+                  border: Border.all(
+                    color: AppColors.surfaceContainer,
+                    width: 4,
                   ),
+                  color: AppColors.surfaceContainerHighest,
                 ),
+                child: _photoUrl != null && _photoUrl!.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          _photoUrl!,
+                          fit: BoxFit.cover,
+                          width: 96,
+                          height: 96,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        size: 48,
+                        color: AppColors.outline,
+                      ),
               ),
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                child: GestureDetector(
+                  onTap: () async {
+                    await Navigator.pushNamed(context, '/edit_profile');
+                    _loadUserProfile();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
-            'Alex Johnson',
-            style: AppTextStyles.headlineSm.copyWith(color: AppColors.onSurface),
+            _name,
+            style: AppTextStyles.headlineSm.copyWith(
+              color: AppColors.onSurface,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
-            'alex.j@kampus.id',
-            style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+            _email,
+            style: AppTextStyles.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
+          if (_phone.isNotEmpty || _bio.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(color: AppColors.outlineVariant),
+            const SizedBox(height: 12),
+            if (_phone.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.phone, size: 16, color: AppColors.outline),
+                  const SizedBox(width: 8),
+                  Text(
+                    _phone,
+                    style: AppTextStyles.bodyMd.copyWith(
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            if (_phone.isNotEmpty && _bio.isNotEmpty) const SizedBox(height: 8),
+            if (_bio.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  _bio,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+          ],
         ],
       ),
     );
@@ -144,8 +241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.person,
             title: 'Edit Profil',
             trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
-            onTap: () {
-              Navigator.pushNamed(context, '/edit_profile');
+            onTap: () async {
+              await Navigator.pushNamed(context, '/edit_profile');
+              _loadUserProfile();
             },
           ),
           const Divider(height: 1, color: AppColors.surfaceVariant),
@@ -217,7 +315,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: Text(
                 title,
-                style: AppTextStyles.bodyLg.copyWith(color: AppColors.onSurface),
+                style: AppTextStyles.bodyLg.copyWith(
+                  color: AppColors.onSurface,
+                ),
               ),
             ),
             trailing,
@@ -234,9 +334,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           width: double.infinity,
           height: 56,
           child: OutlinedButton.icon(
-            onPressed: () {
-              // Handle logout
-              Navigator.pushReplacementNamed(context, '/login');
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/login',
+                  (route) => false,
+                );
+              }
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
@@ -262,43 +368,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    return BottomAppBar(
-      color: AppColors.surfaceContainerLowest,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      elevation: 8,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-              icon: Icons.dashboard,
-              label: 'Dashboard',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/dashboard'),
-            ),
-            _buildNavItem(
-              icon: Icons.calendar_month,
-              label: 'Calendar',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/calendar'),
-            ),
-            const SizedBox(width: 48), // Space for FAB
-            _buildNavItem(
-              icon: Icons.inventory_2,
-              label: 'Archive',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/archive'),
-            ),
-            _buildNavItem(
-              icon: Icons.settings,
-              label: 'Settings',
-              isActive: true,
-              onTap: () {},
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 8,
+            bottom: 8,
+            left: 16,
+            right: 16,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem(
+                icon: Icons.dashboard,
+                label: 'Dashboard',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/dashboard'),
+              ),
+              _buildNavItem(
+                icon: Icons.calendar_month,
+                label: 'Calendar',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/calendar'),
+              ),
+              _buildAddNavItem(context),
+              _buildNavItem(
+                icon: Icons.archive,
+                label: 'Archive',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/archive'),
+              ),
+              _buildNavItem(
+                icon: Icons.settings,
+                label: 'Settings',
+                isActive: true,
+                onTap: () {},
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAddNavItem(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/add_task'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.add, color: AppColors.onPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Add',
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -317,19 +467,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryContainer : Colors.transparent,
+              color: isActive ? AppColors.primaryFixedDim : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               icon,
-              color: isActive ? AppColors.onPrimaryContainer : AppColors.onSurfaceVariant,
+              color: isActive
+                  ? AppColors.onPrimaryFixed
+                  : AppColors.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: AppTextStyles.labelSm.copyWith(
-              color: isActive ? AppColors.onSurface : AppColors.onSurfaceVariant,
+              color: isActive
+                  ? AppColors.onPrimaryFixed
+                  : AppColors.onSurfaceVariant,
             ),
           ),
         ],

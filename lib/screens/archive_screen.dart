@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
+import '../models/task_model.dart';
+import '../repositories/task_repository.dart';
 
 class ArchiveScreen extends StatefulWidget {
   const ArchiveScreen({super.key});
@@ -10,10 +14,19 @@ class ArchiveScreen extends StatefulWidget {
 
 class _ArchiveScreenState extends State<ArchiveScreen> {
   String _selectedFilter = 'Semua';
-  final List<String> _filters = ['Semua', 'Kampus', 'Pekerjaan', 'Pribadi'];
+  final List<String> _filters = [
+    'Semua',
+    'Kampus',
+    'Kerja',
+    'Organisasi',
+    'Pribadi',
+  ];
+  final TaskRepository _taskRepository = TaskRepository();
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -31,59 +44,98 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          bottom: 100,
-        ), // Space for custom bottom nav
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFilterRow(),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tugas Selesai',
-                    style: AppTextStyles.titleLg.copyWith(
-                      color: AppColors.onSurface,
-                    ),
+      body: user == null
+          ? const Center(child: Text('Silakan login terlebih dahulu.'))
+          : StreamBuilder<List<TaskModel>>(
+              stream: _taskRepository.getTasksStream(user.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                final allTasks = snapshot.data ?? [];
+
+                // Filter only completed tasks
+                var completedTasks = allTasks
+                    .where((t) => t.isCompleted)
+                    .toList();
+
+                // Apply selected category filter
+                if (_selectedFilter != 'Semua') {
+                  completedTasks = completedTasks
+                      .where((t) => t.category == _selectedFilter)
+                      .toList();
+                }
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFilterRow(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tugas Selesai',
+                              style: AppTextStyles.titleLg.copyWith(
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                            Text(
+                              '${completedTasks.length} item ditemukan',
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      completedTasks.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 48.0,
+                                ),
+                                child: Text(
+                                  'Tidak ada tugas selesai.',
+                                  style: AppTextStyles.bodyLg.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Column(
+                                children: completedTasks.map((task) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: _buildArchivedTaskCard(task),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                    ],
                   ),
-                  Text(
-                    '4 item ditemukan',
-                    style: AppTextStyles.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            _buildTaskList(),
-          ],
-        ),
-      ),
       bottomNavigationBar: _buildBottomNavBar(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/add_task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        elevation: 8,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -129,59 +181,34 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     );
   }
 
-  Widget _buildTaskList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        children: [
-          _buildArchivedTaskCard(
-            priorityLabel: 'HIGH',
-            priorityBg: AppColors.errorContainer,
-            priorityColor: AppColors.error,
-            category: 'Kampus',
-            title: 'Laporan Praktikum Fisika',
-            time: '12 Okt, 12:00',
-          ),
-          const SizedBox(height: 12),
-          _buildArchivedTaskCard(
-            priorityLabel: 'MED',
-            priorityBg: AppColors.secondaryFixed,
-            priorityColor: AppColors.onSecondaryFixedVariant,
-            category: 'Organisasi',
-            title: 'Rapat Organisasi',
-            time: '11 Okt, 10:00',
-          ),
-          const SizedBox(height: 12),
-          _buildArchivedTaskCard(
-            priorityLabel: 'LOW',
-            priorityBg: AppColors.tertiaryFixed,
-            priorityColor: AppColors.onTertiaryFixedVariant,
-            category: 'Pribadi',
-            title: 'Beli Buku Referensi',
-            time: '10 Okt, 15:00',
-          ),
-          const SizedBox(height: 12),
-          _buildArchivedTaskCard(
-            priorityLabel: 'HIGH',
-            priorityBg: AppColors.errorContainer,
-            priorityColor: AppColors.error,
-            category: 'Kampus',
-            title: 'Tugas Algoritma',
-            time: '09 Okt, 09:00',
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildArchivedTaskCard(TaskModel task) {
+    Color priorityBg;
+    Color priorityColor;
+    String priorityLabel;
 
-  Widget _buildArchivedTaskCard({
-    required String priorityLabel,
-    required Color priorityBg,
-    required Color priorityColor,
-    required String category,
-    required String title,
-    required String time,
-  }) {
+    switch (task.priority) {
+      case 'Low':
+        priorityLabel = 'LOW';
+        priorityBg = AppColors.tertiaryFixed;
+        priorityColor = AppColors.onTertiaryFixedVariant;
+        break;
+      case 'Medium':
+        priorityLabel = 'MED';
+        priorityBg = AppColors.secondaryFixed;
+        priorityColor = AppColors.onSecondaryFixedVariant;
+        break;
+      case 'High':
+      default:
+        priorityLabel = 'HIGH';
+        priorityBg = AppColors.errorContainer;
+        priorityColor = AppColors.error;
+        break;
+    }
+
+    final formattedTime = task.deadline != null
+        ? DateFormat('dd MMM, HH:mm').format(task.deadline!)
+        : 'Tanpa tenggat';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -198,14 +225,59 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: AppColors.tertiary,
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () async {
+              try {
+                await _taskRepository.updateTaskCompletion(task.id, false);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                        'Tugas dikembalikan ke daftar aktif!',
+                      ),
+                      action: SnackBarAction(
+                        label: 'BATALKAN',
+                        textColor: Colors.amber,
+                        onPressed: () async {
+                          try {
+                            await _taskRepository.updateTaskCompletion(
+                              task.id,
+                              true,
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Gagal menyelesaikan kembali: $e',
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal memulihkan tugas: $e')),
+                  );
+                }
+              }
+            },
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: AppColors.tertiary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, size: 16, color: Colors.white),
             ),
-            child: const Icon(Icons.check, size: 16, color: Colors.white),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -234,7 +306,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      category,
+                      task.category,
                       style: AppTextStyles.labelSm.copyWith(
                         color: AppColors.onSurfaceVariant,
                       ),
@@ -243,7 +315,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  title,
+                  task.title,
                   style: AppTextStyles.titleLg.copyWith(
                     color: AppColors.onSurfaceVariant.withOpacity(0.6),
                     decoration: TextDecoration.lineThrough,
@@ -261,7 +333,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      time,
+                      formattedTime,
                       style: AppTextStyles.labelSm.copyWith(
                         color: AppColors.outline,
                       ),
@@ -271,51 +343,99 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: AppColors.outline),
+          IconButton(
+            icon: const Icon(Icons.chevron_right, color: AppColors.outline),
+            onPressed: () {
+              Navigator.pushNamed(context, '/task_detail', arguments: task);
+            },
+          ),
         ],
       ),
     );
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    return BottomAppBar(
-      color: AppColors.surfaceContainerLowest,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      elevation: 8,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-              icon: Icons.dashboard,
-              label: 'Dashboard',
-              isActive: false,
-              onTap: () =>
-                  Navigator.pushReplacementNamed(context, '/dashboard'),
-            ),
-            _buildNavItem(
-              icon: Icons.calendar_month,
-              label: 'Calendar',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/calendar'),
-            ),
-            const SizedBox(width: 48), // Space for FAB
-            _buildNavItem(
-              icon: Icons.inventory_2,
-              label: 'Archive',
-              isActive: true,
-              onTap: () {},
-            ),
-            _buildNavItem(
-              icon: Icons.settings,
-              label: 'Settings',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 8,
+            bottom: 8,
+            left: 16,
+            right: 16,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem(
+                icon: Icons.dashboard,
+                label: 'Dashboard',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/dashboard'),
+              ),
+              _buildNavItem(
+                icon: Icons.calendar_month,
+                label: 'Calendar',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/calendar'),
+              ),
+              _buildAddNavItem(context),
+              _buildNavItem(
+                icon: Icons.archive,
+                label: 'Archive',
+                isActive: true,
+                onTap: () {},
+              ),
+              _buildNavItem(
+                icon: Icons.settings,
+                label: 'Settings',
+                isActive: false,
+                onTap: () =>
+                    Navigator.pushReplacementNamed(context, '/profile'),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAddNavItem(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/add_task'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.add, color: AppColors.onPrimary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Add',
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -334,13 +454,13 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryContainer : Colors.transparent,
+              color: isActive ? AppColors.primaryFixedDim : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
               icon,
               color: isActive
-                  ? AppColors.onPrimaryContainer
+                  ? AppColors.onPrimaryFixed
                   : AppColors.onSurfaceVariant,
             ),
           ),
@@ -349,7 +469,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
             label,
             style: AppTextStyles.labelSm.copyWith(
               color: isActive
-                  ? AppColors.onSurface
+                  ? AppColors.onPrimaryFixed
                   : AppColors.onSurfaceVariant,
             ),
           ),

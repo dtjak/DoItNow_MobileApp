@@ -322,6 +322,7 @@ class AboutScreen extends StatelessWidget {
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       elevation: 8,
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
         child: Row(

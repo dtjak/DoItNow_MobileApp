@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -9,10 +11,107 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Alex Johnson');
-  final TextEditingController _emailController = TextEditingController(text: 'alex.j@kampus.id');
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  bool _isLoading = true;
+  String? _photoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (doc.exists) {
+          final data = doc.data();
+          if (data != null) {
+            setState(() {
+              _nameController.text = data['name'] ?? '';
+              _emailController.text = data['email'] ?? '';
+              _phoneController.text = data['phone'] ?? '';
+              _bioController.text = data['bio'] ?? '';
+              _photoUrl = data['photo_url'];
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading profile in edit: $e');
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _saveProfile() async {
+    if (_nameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nama dan email tidak boleh kosong.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+              'name': _nameController.text.trim(),
+              'email': _emailController.text.trim(),
+              'phone': _phoneController.text.trim(),
+              'bio': _bioController.text.trim(),
+            });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profil berhasil diperbarui.'),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        debugPrint('Error saving profile: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal menyimpan profil: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -44,19 +143,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildProfilePictureSection(),
-            const SizedBox(height: 32),
-            _buildFormFieldsSection(),
-            const SizedBox(height: 32),
-            _buildActionButtons(context),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildProfilePictureSection(),
+                  const SizedBox(height: 32),
+                  _buildFormFieldsSection(),
+                  const SizedBox(height: 32),
+                  _buildActionButtons(context),
+                ],
+              ),
+            ),
     );
   }
 
@@ -78,13 +182,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     offset: const Offset(0, 2),
                   ),
                 ],
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBQplOJ7iiNLURk1gVRQPhHI4AeiWYVKdRNj0YxrAZpaqRPkTau5yOUHqQay35cToHHAmzmrexcM0MnNsDOeux_m70QQdRhtWOy6RM-ekOuoBZFlbDWh0TZKdKlZ4PbKlS8_UP7jFeq-Nf6UE2GMtEGV7d0jDYioBECLmvE7HW_7VPizP1oxB7B8WCGMmJgnphi396NZ6QjL2dx16ZVEazi-QRncH9khmu_3og43lP-aKZBjY_nMC-CEaQzZ5r-K4Dfx0IBkSoksQ',
-                  ),
-                  fit: BoxFit.cover,
-                ),
+                color: AppColors.surfaceContainerHighest,
               ),
+              child: _photoUrl != null && _photoUrl!.isNotEmpty
+                  ? ClipOval(
+                      child: Image.network(
+                        _photoUrl!,
+                        fit: BoxFit.cover,
+                        width: 128,
+                        height: 128,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person,
+                      size: 64,
+                      color: AppColors.outline,
+                    ),
             ),
             Positioned(
               bottom: 0,
@@ -103,7 +216,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.edit, color: AppColors.onPrimary, size: 20),
+                child: const Icon(
+                  Icons.edit,
+                  color: AppColors.onPrimary,
+                  size: 20,
+                ),
               ),
             ),
           ],
@@ -116,7 +233,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         const SizedBox(height: 4),
         Text(
           'Update informasi akun Anda',
-          style: AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTextStyles.labelSm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -126,10 +245,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTextField(
-          label: 'Nama Lengkap',
-          controller: _nameController,
-        ),
+        _buildTextField(label: 'Nama Lengkap', controller: _nameController),
         const SizedBox(height: 24),
         _buildTextField(
           label: 'Email',
@@ -168,7 +284,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           padding: const EdgeInsets.only(left: 4.0, bottom: 4.0),
           child: Text(
             label,
-            style: AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
         ),
         TextFormField(
@@ -178,10 +296,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           style: AppTextStyles.bodyLg.copyWith(color: AppColors.onSurface),
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: AppTextStyles.bodyLg.copyWith(color: AppColors.onSurfaceVariant.withOpacity(0.5)),
+            hintStyle: AppTextStyles.bodyLg.copyWith(
+              color: AppColors.onSurfaceVariant.withOpacity(0.5),
+            ),
             filled: true,
             fillColor: AppColors.surfaceContainerLowest,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.outlineVariant),
@@ -207,10 +330,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           width: double.infinity,
           height: 56,
           child: ElevatedButton.icon(
-            onPressed: () {
-              // Simpan perubahan
-              Navigator.pop(context);
-            },
+            onPressed: _isLoading ? null : _saveProfile,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.onPrimary,

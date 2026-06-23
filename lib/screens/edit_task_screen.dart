@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 
-class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+class EditTaskScreen extends StatefulWidget {
+  const EditTaskScreen({super.key});
 
   @override
-  State<AddTaskScreen> createState() => _AddTaskScreenState();
+  State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
 
-class _AddTaskScreenState extends State<AddTaskScreen> {
-  String _selectedCategory = 'Kampus';
-  String _selectedPriority = 'High';
-  bool _isPinned = false;
+class _EditTaskScreenState extends State<EditTaskScreen> {
+  late TaskModel _task;
+  bool _isInitialized = false;
+
+  late String _selectedCategory;
+  late String _selectedPriority;
+  late bool _isPinned;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isLoading = false;
 
   final TaskRepository _taskRepository = TaskRepository();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
 
   final List<Map<String, dynamic>> _categories = [
     {'name': 'Kampus', 'icon': Icons.school},
@@ -30,6 +32,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     {'name': 'Organisasi', 'icon': Icons.groups},
     {'name': 'Pribadi', 'icon': Icons.person},
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _task = ModalRoute.of(context)!.settings.arguments as TaskModel;
+      _selectedCategory = _task.category;
+      _selectedPriority = _task.priority;
+      _isPinned = _task.isPinned;
+      _titleController = TextEditingController(text: _task.title);
+      _descController = TextEditingController(text: _task.description);
+      if (_task.deadline != null) {
+        _selectedDate = _task.deadline;
+        _selectedTime = TimeOfDay.fromDateTime(_task.deadline!);
+      }
+      _isInitialized = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -41,8 +61,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (picked != null) {
@@ -55,7 +75,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: _selectedTime ?? TimeOfDay.now(),
     );
     if (picked != null) {
       setState(() {
@@ -69,14 +89,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Judul tugas tidak boleh kosong.')),
-      );
-      return;
-    }
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pengguna tidak terautentikasi.')),
       );
       return;
     }
@@ -96,27 +108,27 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         );
       }
 
-      final task = TaskModel(
-        id: '',
-        userId: user.uid,
+      final updatedTask = TaskModel(
+        id: _task.id,
+        userId: _task.userId,
         title: title,
         description: _descController.text.trim(),
         category: _selectedCategory,
         priority: _selectedPriority,
         deadline: deadline,
         isPinned: _isPinned,
-        isCompleted: false,
-        createdAt: DateTime.now(),
+        isCompleted: _task.isCompleted,
+        createdAt: _task.createdAt,
       );
 
-      await _taskRepository.createTask(task);
+      await _taskRepository.updateTask(updatedTask);
 
       if (!mounted) return;
-      Navigator.pop(context);
+      Navigator.pop(context, updatedTask);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan tugas: $e')));
+      ).showSnackBar(SnackBar(content: Text('Gagal memperbarui tugas: $e')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -126,6 +138,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -137,7 +153,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Tambah Tugas Baru',
+          'Edit Tugas',
           style: AppTextStyles.headlineMdMobile.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.bold,
@@ -151,7 +167,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               left: 16.0,
               right: 16.0,
               top: 24.0,
-              bottom: 120.0, // Space for footer button
+              bottom: 120.0,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +209,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
           ),
 
-          // Footer Action Button
           Positioned(
             bottom: 0,
             left: 0,
@@ -237,7 +252,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         ),
                       )
                     : Text(
-                        'Simpan Tugas',
+                        'Simpan Perubahan',
                         style: AppTextStyles.labelLg.copyWith(
                           color: AppColors.onPrimary,
                           fontWeight: FontWeight.bold,
