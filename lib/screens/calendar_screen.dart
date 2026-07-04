@@ -15,6 +15,7 @@ class CalendarScreen extends StatefulWidget {
 
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedMonth = DateTime.now();
+  DateTime? _selectedDate = DateTime.now();
   final TaskRepository _taskRepository = TaskRepository();
 
   @override
@@ -53,11 +54,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final activeTasks = tasks.where((t) => !t.isCompleted).toList();
           final completedCount = tasks.where((t) => t.isCompleted).length;
 
-          // Filter active tasks for the selected month
-          final activeTasksThisMonth = activeTasks.where((t) {
-            if (t.deadline == null) return false;
-            return t.deadline!.month == _selectedMonth.month &&
-                t.deadline!.year == _selectedMonth.year;
+          // Filter active tasks for the selected date
+          final activeTasksForSelectedDate = activeTasks.where((t) {
+            if (t.deadline == null || _selectedDate == null) return false;
+            return t.deadline!.day == _selectedDate!.day &&
+                t.deadline!.month == _selectedDate!.month &&
+                t.deadline!.year == _selectedDate!.year;
           }).toList();
 
           return SingleChildScrollView(
@@ -72,7 +74,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               children: [
                 _buildCalendarSection(tasks),
                 const SizedBox(height: 24),
-                _buildTaskScheduleSection(context, activeTasksThisMonth),
+                _buildTaskScheduleSection(context, activeTasksForSelectedDate),
                 const SizedBox(height: 24),
                 _buildBentoCards(completedCount),
               ],
@@ -114,29 +116,74 @@ class _CalendarScreenState extends State<CalendarScreen> {
     List<Widget> dayWidgets = [];
 
     // Previous month days (faded)
+    final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     for (int i = prevMonthLastDay - offset + 1; i <= prevMonthLastDay; i++) {
-      dayWidgets.add(_buildCalendarDay(i.toString(), isFaded: true));
+      final dayDateTime = DateTime(prevMonth.year, prevMonth.month, i);
+      final isSelected = _selectedDate != null &&
+          _selectedDate!.day == i &&
+          _selectedDate!.month == prevMonth.month &&
+          _selectedDate!.year == prevMonth.year;
+      dayWidgets.add(_buildCalendarDay(
+        i.toString(),
+        isFaded: true,
+        isSelected: isSelected,
+        onTap: () {
+          setState(() {
+            _selectedMonth = prevMonth;
+            _selectedDate = dayDateTime;
+          });
+        },
+      ));
     }
 
     // Current month days
     for (int i = 1; i <= lastDay.day; i++) {
       final isToday = isCurrentMonth && (i == now.day);
       final hasTask = daysWithTasks.contains(i);
+      final dayDateTime = DateTime(_selectedMonth.year, _selectedMonth.month, i);
+      final isSelected = _selectedDate != null &&
+          _selectedDate!.day == i &&
+          _selectedDate!.month == _selectedMonth.month &&
+          _selectedDate!.year == _selectedMonth.year;
+
       dayWidgets.add(_buildCalendarDay(
         i.toString(),
         isCurrent: isToday,
+        isSelected: isSelected,
         hasDot: hasTask,
+        onTap: () {
+          setState(() {
+            _selectedDate = dayDateTime;
+          });
+        },
       ));
     }
 
     // Next month days to pad to multiples of 7
+    final nextMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
     int totalCells = dayWidgets.length;
     int nextMonthDays = (7 - (totalCells % 7)) % 7;
     if (totalCells + nextMonthDays < 35) {
       nextMonthDays += 7;
     }
     for (int i = 1; i <= nextMonthDays; i++) {
-      dayWidgets.add(_buildCalendarDay(i.toString(), isFaded: true));
+      final dayDateTime = DateTime(nextMonth.year, nextMonth.month, i);
+      final isSelected = _selectedDate != null &&
+          _selectedDate!.day == i &&
+          _selectedDate!.month == nextMonth.month &&
+          _selectedDate!.year == nextMonth.year;
+
+      dayWidgets.add(_buildCalendarDay(
+        i.toString(),
+        isFaded: true,
+        isSelected: isSelected,
+        onTap: () {
+          setState(() {
+            _selectedMonth = nextMonth;
+            _selectedDate = dayDateTime;
+          });
+        },
+      ));
     }
 
     return Container(
@@ -232,50 +279,73 @@ class _CalendarScreenState extends State<CalendarScreen> {
     String day, {
     bool isFaded = false,
     bool isCurrent = false,
+    bool isSelected = false,
     bool hasDot = false,
+    VoidCallback? onTap,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isCurrent)
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isSelected)
+            Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                day,
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: AppColors.onPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          else if (isCurrent)
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.primary, width: 2),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                day,
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          else
+            Text(
               day,
               style: AppTextStyles.bodyMd.copyWith(
-                color: AppColors.onPrimary,
-                fontWeight: FontWeight.bold,
+                color: isFaded
+                    ? AppColors.onSurfaceVariant.withOpacity(0.3)
+                    : AppColors.onSurface,
               ),
             ),
-          )
-        else
-          Text(
-            day,
-            style: AppTextStyles.bodyMd.copyWith(
-              color: isFaded
-                  ? AppColors.onSurfaceVariant.withOpacity(0.3)
-                  : AppColors.onSurface,
-            ),
-          ),
-        if (hasDot)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            width: 4,
-            height: 4,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-          )
-        else
-          const SizedBox(height: 8),
-      ],
+          if (hasDot)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.onPrimary : AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            )
+          else
+            const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 
@@ -283,12 +353,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
     BuildContext context,
     List<TaskModel> activeTasks,
   ) {
+    String formattedDate = '';
+    if (_selectedDate != null) {
+      formattedDate = DateFormat('dd MMMM yyyy').format(_selectedDate!);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Jadwal Tugas',
-          style: AppTextStyles.headlineSm.copyWith(color: AppColors.onSurface),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Jadwal Tugas',
+              style: AppTextStyles.headlineSm.copyWith(color: AppColors.onSurface),
+            ),
+            if (formattedDate.isNotEmpty)
+              Text(
+                formattedDate,
+                style: AppTextStyles.labelLg.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         if (activeTasks.isEmpty)
@@ -311,7 +396,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Tidak ada tugas berjalan untuk bulan ini.',
+                  'Tidak ada tugas berjalan untuk tanggal ini.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMd.copyWith(
                     color: AppColors.onSurfaceVariant,
