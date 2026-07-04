@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -86,17 +87,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'add_button',
         onPressed: () {
           Navigator.pushNamed(context, '/add_task');
         },
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: const CircleBorder(),
         child: const Icon(Icons.add, size: 32),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: const CustomBottomNavBar(currentRoute: '/dashboard'),
     );
   }
 
@@ -592,39 +594,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Row(
           children: [
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
                 try {
                   await _taskRepository.updateTaskCompletion(task.id, true);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tugas berhasil diselesaikan!'),
+                  scaffoldMessenger.clearSnackBars();
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: const Text('Tugas berhasil diselesaikan!'),
+                      duration: const Duration(seconds: 3),
+                      action: SnackBarAction(
+                        label: 'Urungkan',
+                        textColor: AppColors.primaryFixedDim,
+                        onPressed: () async {
+                          try {
+                            await _taskRepository.updateTaskCompletion(
+                              task.id,
+                              false,
+                            );
+                          } catch (e) {
+                            debugPrint('Gagal mengurungkan tugas: $e');
+                          }
+                        },
                       ),
-                    );
-                  }
+                    ),
+                  );
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal menyelesaikan tugas: $e')),
-                    );
-                  }
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Gagal menyelesaikan tugas: $e')),
+                  );
                 }
               },
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.outlineVariant, width: 2),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 12.0,
+                  top: 8.0,
+                  bottom: 8.0,
                 ),
-                child: const Icon(
-                  Icons.check,
-                  size: 16,
-                  color: Colors.transparent,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.outlineVariant,
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    size: 16,
+                    color: Colors.transparent,
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 4),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,103 +685,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Icon(Icons.chevron_right, color: AppColors.outline),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 8,
-            bottom: 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(
-                icon: Icons.dashboard,
-                label: 'Dashboard',
-                isActive: true,
-                onTap: () {},
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month,
-                label: 'Calendar',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/calendar'),
-              ),
-              const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(
-                icon: Icons.archive,
-                label: 'Archive',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/archive'),
-              ),
-              _buildNavItem(
-                icon: Icons.settings,
-                label: 'Settings',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/profile'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryFixedDim : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.labelSm.copyWith(
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
+import '../models/task_model.dart';
+import '../repositories/task_repository.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
-class CalendarScreen extends StatelessWidget {
+class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
   @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+  DateTime _selectedMonth = DateTime.now();
+  final TaskRepository _taskRepository = TaskRepository();
+
+  @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -23,37 +38,107 @@ class CalendarScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          top: 16.0,
-          bottom: 100.0, // Space for custom bottom nav
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildCalendarSection(),
-            const SizedBox(height: 24),
-            _buildTaskScheduleSection(context),
-            const SizedBox(height: 24),
-            _buildBentoCards(),
-          ],
-        ),
+      body: StreamBuilder<List<TaskModel>>(
+        stream: _taskRepository.getTasksStream(userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          final tasks = snapshot.data ?? [];
+          final activeTasks = tasks.where((t) => !t.isCompleted).toList();
+          final completedCount = tasks.where((t) => t.isCompleted).length;
+
+          // Filter active tasks for the selected month
+          final activeTasksThisMonth = activeTasks.where((t) {
+            if (t.deadline == null) return false;
+            return t.deadline!.month == _selectedMonth.month &&
+                t.deadline!.year == _selectedMonth.year;
+          }).toList();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 100.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildCalendarSection(tasks),
+                const SizedBox(height: 24),
+                _buildTaskScheduleSection(context, activeTasksThisMonth),
+                const SizedBox(height: 24),
+                _buildBentoCards(completedCount),
+              ],
+            ),
+          );
+        },
       ),
-      // We are using a custom bottom navigation bar that includes a center FAB
-      bottomNavigationBar: _buildBottomNavBar(context),
+      bottomNavigationBar: const CustomBottomNavBar(currentRoute: '/calendar'),
     );
   }
 
-  Widget _buildCalendarSection() {
+  Widget _buildCalendarSection(List<TaskModel> tasks) {
+    final monthYearStr = DateFormat('MMMM yyyy').format(_selectedMonth);
+
+    // Get days of the selected month that have active tasks
+    final daysWithTasks = tasks
+        .where((t) =>
+            t.deadline != null &&
+            t.deadline!.month == _selectedMonth.month &&
+            t.deadline!.year == _selectedMonth.year &&
+            !t.isCompleted)
+        .map((t) => t.deadline!.day)
+        .toSet();
+
+    final now = DateTime.now();
+    final isCurrentMonth =
+        now.month == _selectedMonth.month && now.year == _selectedMonth.year;
+
+    // Calculate days for grid
+    final firstDay = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+    final lastDay = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+
+    // In our UI, grid starts with Monday (S, S, R, K, J, S, M)
+    // Dart weekday: 1 = Monday, 7 = Sunday
+    int offset = firstDay.weekday - 1;
+    final prevMonthLastDay =
+        DateTime(_selectedMonth.year, _selectedMonth.month, 0).day;
+
+    List<Widget> dayWidgets = [];
+
+    // Previous month days (faded)
+    for (int i = prevMonthLastDay - offset + 1; i <= prevMonthLastDay; i++) {
+      dayWidgets.add(_buildCalendarDay(i.toString(), isFaded: true));
+    }
+
+    // Current month days
+    for (int i = 1; i <= lastDay.day; i++) {
+      final isToday = isCurrentMonth && (i == now.day);
+      final hasTask = daysWithTasks.contains(i);
+      dayWidgets.add(_buildCalendarDay(
+        i.toString(),
+        isCurrent: isToday,
+        hasDot: hasTask,
+      ));
+    }
+
+    // Next month days to pad to multiples of 7
+    int totalCells = dayWidgets.length;
+    int nextMonthDays = (7 - (totalCells % 7)) % 7;
+    if (totalCells + nextMonthDays < 35) {
+      nextMonthDays += 7;
+    }
+    for (int i = 1; i <= nextMonthDays; i++) {
+      dayWidgets.add(_buildCalendarDay(i.toString(), isFaded: true));
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -74,7 +159,7 @@ class CalendarScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Oktober 2023',
+                monthYearStr,
                 style: AppTextStyles.titleLg.copyWith(
                   color: AppColors.onSurface,
                 ),
@@ -86,14 +171,28 @@ class CalendarScreen extends StatelessWidget {
                       Icons.chevron_left,
                       color: AppColors.onSurfaceVariant,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _selectedMonth = DateTime(
+                          _selectedMonth.year,
+                          _selectedMonth.month - 1,
+                        );
+                      });
+                    },
                   ),
                   IconButton(
                     icon: const Icon(
                       Icons.chevron_right,
                       color: AppColors.onSurfaceVariant,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _selectedMonth = DateTime(
+                          _selectedMonth.year,
+                          _selectedMonth.month + 1,
+                        );
+                      });
+                    },
                   ),
                 ],
               ),
@@ -117,52 +216,12 @@ class CalendarScreen extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 8),
-          // Calendar Grid (Static representation as per HTML)
           GridView.count(
             crossAxisCount: 7,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 1.0,
-            children: [
-              // Previous month
-              for (int i = 24; i <= 30; i++)
-                _buildCalendarDay(i.toString(), isFaded: true),
-              // Current month
-              _buildCalendarDay('1'),
-              _buildCalendarDay('2', hasDot: true),
-              _buildCalendarDay('3'),
-              _buildCalendarDay('4', hasDot: true),
-              _buildCalendarDay('5'),
-              _buildCalendarDay('6'),
-              _buildCalendarDay('7'),
-              _buildCalendarDay('8'),
-              _buildCalendarDay('9'),
-              _buildCalendarDay('10'),
-              _buildCalendarDay('11'),
-              _buildCalendarDay('12', isCurrent: true, hasDot: true),
-              _buildCalendarDay('13'),
-              _buildCalendarDay('14'),
-              _buildCalendarDay('15', hasDot: true),
-              _buildCalendarDay('16'),
-              _buildCalendarDay('17'),
-              _buildCalendarDay('18', hasDot: true),
-              _buildCalendarDay('19'),
-              _buildCalendarDay('20'),
-              _buildCalendarDay('21'),
-              _buildCalendarDay('22'),
-              _buildCalendarDay('23'),
-              _buildCalendarDay('24'),
-              _buildCalendarDay('25'),
-              _buildCalendarDay('26', hasDot: true),
-              _buildCalendarDay('27'),
-              _buildCalendarDay('28'),
-              _buildCalendarDay('29'),
-              _buildCalendarDay('30'),
-              _buildCalendarDay('31'),
-              // Next month
-              for (int i = 1; i <= 4; i++)
-                _buildCalendarDay(i.toString(), isFaded: true),
-            ],
+            children: dayWidgets,
           ),
         ],
       ),
@@ -215,12 +274,15 @@ class CalendarScreen extends StatelessWidget {
             ),
           )
         else
-          const SizedBox(height: 8), // Placeholder to keep alignment
+          const SizedBox(height: 8),
       ],
     );
   }
 
-  Widget _buildTaskScheduleSection(BuildContext context) {
+  Widget _buildTaskScheduleSection(
+    BuildContext context,
+    List<TaskModel> activeTasks,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -229,35 +291,72 @@ class CalendarScreen extends StatelessWidget {
           style: AppTextStyles.headlineSm.copyWith(color: AppColors.onSurface),
         ),
         const SizedBox(height: 16),
-        _buildTaskCard(
-          context: context,
-          priorityLabel: 'HIGH',
-          priorityColor: AppColors.error,
-          priorityBg: AppColors.errorContainer,
-          category: 'Kampus',
-          title: 'Matematika Diskrit',
-          time: '09:00 - 11:30',
-        ),
-        const SizedBox(height: 12),
-        _buildTaskCard(
-          context: context,
-          priorityLabel: 'MED',
-          priorityColor: AppColors.secondary,
-          priorityBg: AppColors.secondaryFixed,
-          category: 'Kerja',
-          title: 'Daily Sync UI Design',
-          time: '14:00 - 15:00',
-        ),
-        const SizedBox(height: 12),
-        _buildTaskCard(
-          context: context,
-          priorityLabel: 'HIGH',
-          priorityColor: AppColors.error,
-          priorityBg: AppColors.errorContainer,
-          category: 'Kampus',
-          title: 'Deadline Project Web',
-          time: '23:59',
-        ),
+        if (activeTasks.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.surfaceContainerHigh,
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.task_alt,
+                  size: 48,
+                  color: AppColors.onSurfaceVariant.withOpacity(0.3),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Tidak ada tugas berjalan untuk bulan ini.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: activeTasks.map((task) {
+              Color priorityColor;
+              Color priorityBg;
+              if (task.priority.toLowerCase() == 'high') {
+                priorityColor = AppColors.error;
+                priorityBg = AppColors.errorContainer;
+              } else if (task.priority.toLowerCase() == 'medium' ||
+                  task.priority.toLowerCase() == 'med') {
+                priorityColor = AppColors.secondary;
+                priorityBg = AppColors.secondaryFixed;
+              } else {
+                priorityColor = AppColors.tertiary;
+                priorityBg = AppColors.tertiaryFixed;
+              }
+
+              String timeStr = 'Tanpa tenggat';
+              if (task.deadline != null) {
+                timeStr = DateFormat('HH:mm').format(task.deadline!);
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _buildTaskCard(
+                  context: context,
+                  priorityLabel: task.priority.toUpperCase(),
+                  priorityColor: priorityColor,
+                  priorityBg: priorityBg,
+                  category: task.category,
+                  title: task.title,
+                  time: timeStr,
+                  task: task,
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
@@ -270,10 +369,11 @@ class CalendarScreen extends StatelessWidget {
     required String category,
     required String title,
     required String time,
+    required TaskModel task,
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/task_detail');
+        Navigator.pushNamed(context, '/task_detail', arguments: task);
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -290,15 +390,54 @@ class CalendarScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.outlineVariant, width: 2),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                try {
+                  await _taskRepository.updateTaskCompletion(task.id, true);
+                  scaffoldMessenger.clearSnackBars();
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: const Text('Tugas berhasil diselesaikan!'),
+                      duration: const Duration(seconds: 3),
+                      action: SnackBarAction(
+                        label: 'Urungkan',
+                        textColor: AppColors.primaryFixedDim,
+                        onPressed: () async {
+                          try {
+                            await _taskRepository.updateTaskCompletion(task.id, false);
+                          } catch (e) {
+                            debugPrint('Gagal mengurungkan tugas: $e');
+                          }
+                        },
+                      ),
+                    ),
+                  );
+                } catch (e) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Gagal menyelesaikan tugas: $e')),
+                  );
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12.0, top: 8.0, bottom: 8.0),
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.outlineVariant, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    size: 16,
+                    color: Colors.transparent,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 4),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +507,7 @@ class CalendarScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBentoCards() {
+  Widget _buildBentoCards(int completedCount) {
     return Row(
       children: [
         Expanded(
@@ -398,16 +537,16 @@ class CalendarScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '12',
-                      style: TextStyle(
+                    Text(
+                      '$completedCount',
+                      style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: AppColors.onPrimaryContainer,
                       ),
                     ),
                     Text(
-                      'Selesai bulan ini',
+                      'Tugas Selesai',
                       style: AppTextStyles.labelSm.copyWith(
                         color: AppColors.onPrimaryContainer.withOpacity(0.8),
                       ),
@@ -462,130 +601,6 @@ class CalendarScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 8,
-            bottom: 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(
-                icon: Icons.dashboard,
-                label: 'Dashboard',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/dashboard'),
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month,
-                label: 'Calendar',
-                isActive: true,
-                onTap: () {},
-              ),
-              _buildAddNavItem(context),
-              _buildNavItem(
-                icon: Icons.archive,
-                label: 'Archive',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/archive'),
-              ),
-              _buildNavItem(
-                icon: Icons.settings,
-                label: 'Settings',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/profile'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddNavItem(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/add_task'),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.add, color: AppColors.onPrimary),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Add',
-            style: AppTextStyles.labelSm.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryFixedDim : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.labelSm.copyWith(
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

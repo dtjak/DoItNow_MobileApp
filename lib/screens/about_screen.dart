@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -46,16 +47,7 @@ class AboutScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavBar(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/add_task'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        elevation: 8,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: const CustomBottomNavBar(currentRoute: '/profile'),
     );
   }
 
@@ -316,85 +308,4 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavBar(BuildContext context) {
-    return BottomAppBar(
-      color: AppColors.surfaceContainerLowest,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8.0,
-      elevation: 8,
-      padding: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-              icon: Icons.dashboard,
-              label: 'Dashboard',
-              isActive: false,
-              onTap: () =>
-                  Navigator.pushReplacementNamed(context, '/dashboard'),
-            ),
-            _buildNavItem(
-              icon: Icons.calendar_month,
-              label: 'Calendar',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/calendar'),
-            ),
-            const SizedBox(width: 48), // Space for FAB
-            _buildNavItem(
-              icon: Icons.inventory_2,
-              label: 'Archive',
-              isActive: false,
-              onTap: () => Navigator.pushReplacementNamed(context, '/archive'),
-            ),
-            _buildNavItem(
-              icon: Icons.settings,
-              label: 'Settings',
-              isActive: true,
-              onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryContainer : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isActive
-                  ? AppColors.onPrimaryContainer
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.labelSm.copyWith(
-              color: isActive
-                  ? AppColors.onSurface
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

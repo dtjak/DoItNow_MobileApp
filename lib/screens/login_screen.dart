@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_helper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -387,7 +388,30 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
-                                onPressed: () {},
+                                onPressed: _isLoading
+                                    ? null
+                                    : () async {
+                                        setState(() {
+                                          _isLoading = true;
+                                          _errorMessage = null;
+                                        });
+                                        final navigator = Navigator.of(context);
+                                        final user =
+                                            await AuthHelper.signInWithGoogle(
+                                              context,
+                                            );
+                                        if (user != null) {
+                                          navigator.pushReplacementNamed(
+                                            '/dashboard',
+                                          );
+                                        } else {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isLoading = false;
+                                            });
+                                          }
+                                        }
+                                      },
                                 style: OutlinedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,

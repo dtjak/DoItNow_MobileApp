@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import '../widgets/custom_bottom_nav_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -97,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: _buildBottomNavBar(context),
+      bottomNavigationBar: const CustomBottomNavBar(currentRoute: '/profile'),
     );
   }
 
@@ -364,130 +365,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: AppTextStyles.labelSm.copyWith(color: AppColors.outline),
         ),
       ],
-    );
-  }
-
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 8,
-            bottom: 8,
-            left: 16,
-            right: 16,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(
-                icon: Icons.dashboard,
-                label: 'Dashboard',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/dashboard'),
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month,
-                label: 'Calendar',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/calendar'),
-              ),
-              _buildAddNavItem(context),
-              _buildNavItem(
-                icon: Icons.archive,
-                label: 'Archive',
-                isActive: false,
-                onTap: () =>
-                    Navigator.pushReplacementNamed(context, '/archive'),
-              ),
-              _buildNavItem(
-                icon: Icons.settings,
-                label: 'Settings',
-                isActive: true,
-                onTap: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddNavItem(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/add_task'),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.add, color: AppColors.onPrimary),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Add',
-            style: AppTextStyles.labelSm.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryFixedDim : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.labelSm.copyWith(
-              color: isActive
-                  ? AppColors.onPrimaryFixed
-                  : AppColors.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

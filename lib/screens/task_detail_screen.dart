@@ -148,8 +148,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       try {
                         await taskRepository.updateTaskCompletion(_task.id, true);
                         if (context.mounted) {
+                          ScaffoldMessenger.of(context).clearSnackBars();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Tugas berhasil diselesaikan!')),
+                            SnackBar(
+                              content: const Text('Tugas berhasil diselesaikan!'),
+                              duration: const Duration(seconds: 3),
+                              action: SnackBarAction(
+                                label: 'Urungkan',
+                                textColor: AppColors.primaryFixedDim,
+                                onPressed: () async {
+                                  try {
+                                    await taskRepository.updateTaskCompletion(_task.id, false);
+                                  } catch (e) {
+                                    debugPrint('Gagal mengurungkan tugas: $e');
+                                  }
+                                },
+                              ),
+                            ),
                           );
                           Navigator.pop(context);
                         }

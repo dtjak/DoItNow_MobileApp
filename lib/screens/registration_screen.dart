@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import '../utils/auth_helper.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -403,7 +404,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: OutlinedButton(
-                                    onPressed: () {},
+                                    onPressed: _isLoading
+                                        ? null
+                                        : () async {
+                                            setState(() {
+                                              _isLoading = true;
+                                              _errorMessage = null;
+                                            });
+                                            final navigator = Navigator.of(context);
+                                            final user = await AuthHelper.signInWithGoogle(context);
+                                            if (user != null) {
+                                              navigator.pushNamedAndRemoveUntil(
+                                                '/dashboard',
+                                                (route) => false,
+                                              );
+                                            } else {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _isLoading = false;
+                                                });
+                                              }
+                                            }
+                                          },
                                     style: OutlinedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 16,
