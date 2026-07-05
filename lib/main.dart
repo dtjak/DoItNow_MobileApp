@@ -15,9 +15,17 @@ import 'screens/edit_profile_screen.dart';
 import 'screens/about_screen.dart';
 import 'theme/app_theme.dart';
 
+import 'services/notification_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Initialize and request local notifications permissions
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.requestPermissions();
+
   runApp(const MyApp());
 }
 

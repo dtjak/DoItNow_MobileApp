@@ -58,4 +58,30 @@ class TaskModel {
       'created_at': Timestamp.fromDate(createdAt),
     };
   }
+
+  TaskModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    String? category,
+    String? priority,
+    DateTime? deadline,
+    bool? isPinned,
+    bool? isCompleted,
+    DateTime? createdAt,
+  }) {
+    return TaskModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      priority: priority ?? this.priority,
+      deadline: deadline ?? this.deadline,
+      isPinned: isPinned ?? this.isPinned,
+      isCompleted: isCompleted ?? this.isCompleted,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

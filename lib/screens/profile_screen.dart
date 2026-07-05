@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
@@ -27,6 +29,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isNotificationEnabled = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _setNotificationPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', value);
+    setState(() {
+      _isNotificationEnabled = value;
+    });
+    if (!value) {
+      await NotificationService().cancelAllNotifications();
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -290,9 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             trailing: Switch(
               value: _isNotificationEnabled,
               onChanged: (val) {
-                setState(() {
-                  _isNotificationEnabled = val;
-                });
+                _setNotificationPreference(val);
               },
               activeColor: AppColors.primary,
             ),
