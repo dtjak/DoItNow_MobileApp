@@ -24,6 +24,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Pribadi',
   ];
   final TaskRepository _taskRepository = TaskRepository();
+  final PageController _pinnedPageController = PageController();
+  int _activePinnedPage = 0;
+
+  @override
+  void dispose() {
+    _pinnedPageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -192,31 +200,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return const SizedBox.shrink();
     }
 
-    final largeTask = pinnedTasks[0];
-    List<Widget> smallCardsRow = [];
-    if (pinnedTasks.length > 1) {
-      final task1 = pinnedTasks[1];
-      smallCardsRow.add(
-        Expanded(child: _buildSmallPinnedTaskCard(task: task1)),
-      );
-      if (pinnedTasks.length > 2) {
-        final task2 = pinnedTasks[2];
-        smallCardsRow.add(const SizedBox(width: 12));
+    final totalTasks = pinnedTasks.length;
+
+    // If 3 or fewer tasks, render directly so height wraps content perfectly
+    if (totalTasks <= 3) {
+      final largeTask = pinnedTasks[0];
+      List<Widget> smallCardsRow = [];
+      if (totalTasks > 1) {
+        final task1 = pinnedTasks[1];
         smallCardsRow.add(
-          Expanded(child: _buildSmallPinnedTaskCard(task: task2)),
+          Expanded(child: _buildSmallPinnedTaskCard(task: task1)),
         );
-      } else {
-        smallCardsRow.add(const SizedBox(width: 12));
-        smallCardsRow.add(const Expanded(child: SizedBox.shrink()));
+        if (totalTasks > 2) {
+          final task2 = pinnedTasks[2];
+          smallCardsRow.add(const SizedBox(width: 12));
+          smallCardsRow.add(
+            Expanded(child: _buildSmallPinnedTaskCard(task: task2)),
+          );
+        } else {
+          smallCardsRow.add(const SizedBox(width: 12));
+          smallCardsRow.add(const Expanded(child: SizedBox.shrink()));
+        }
       }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.push_pin, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Tugas Penting',
+                  style: AppTextStyles.titleLg.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildPinnedTaskCard(task: largeTask),
+            if (smallCardsRow.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: smallCardsRow,
+              ),
+            ],
+          ],
+        ),
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    // Split pinnedTasks into pages of up to 3 tasks each
+    List<List<TaskModel>> pages = [];
+    for (int i = 0; i < pinnedTasks.length; i += 3) {
+      int end = i + 3;
+      if (end > pinnedTasks.length) end = pinnedTasks.length;
+      pages.add(pinnedTasks.sublist(i, end));
+    }
+
+    final pageCount = pages.length;
+
+    // Reset active page index if it out of bounds after tasks modification
+    if (_activePinnedPage >= pageCount) {
+      _activePinnedPage = 0;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
             children: [
               const Icon(Icons.push_pin, color: AppColors.primary),
               const SizedBox(width: 8),
@@ -228,21 +286,80 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Column(
-            children: [
-              _buildPinnedTaskCard(task: largeTask),
-              if (smallCardsRow.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: smallCardsRow,
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 250,
+          child: PageView.builder(
+            controller: _pinnedPageController,
+            onPageChanged: (int index) {
+              setState(() {
+                _activePinnedPage = index;
+              });
+            },
+            itemCount: pageCount,
+            itemBuilder: (context, pageIndex) {
+              final pageTasks = pages[pageIndex];
+              final largeTask = pageTasks[0];
+              List<Widget> smallCardsRow = [];
+              
+              if (pageTasks.length > 1) {
+                final task1 = pageTasks[1];
+                smallCardsRow.add(
+                  Expanded(child: _buildSmallPinnedTaskCard(task: task1)),
+                );
+                if (pageTasks.length > 2) {
+                  final task2 = pageTasks[2];
+                  smallCardsRow.add(const SizedBox(width: 12));
+                  smallCardsRow.add(
+                    Expanded(child: _buildSmallPinnedTaskCard(task: task2)),
+                  );
+                } else {
+                  smallCardsRow.add(const SizedBox(width: 12));
+                  smallCardsRow.add(const Expanded(child: SizedBox.shrink()));
+                }
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildPinnedTaskCard(task: largeTask),
+                    if (smallCardsRow.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: smallCardsRow,
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-            ],
+              );
+            },
+          ),
+        ),
+        if (pageCount > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              pageCount,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _activePinnedPage == index ? 16 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: _activePinnedPage == index
+                      ? AppColors.primary
+                      : AppColors.outlineVariant,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
           ),
         ],
-      ),
+      ],
     );
   }
 
