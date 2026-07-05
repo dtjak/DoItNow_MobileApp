@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -55,6 +57,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  Future<void> _pickImageFromDevice() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 256,
+        maxHeight: 256,
+        imageQuality: 75,
+      );
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        final base64String = base64Encode(bytes);
+        final format = image.name.split('.').last.toLowerCase();
+        final mimeType = (format == 'jpg' || format == 'jpeg') ? 'image/jpeg' : 'image/png';
+        final dataUrl = 'data:$mimeType;base64,$base64String';
+        setState(() {
+          _photoUrl = dataUrl;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memilih gambar: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
@@ -82,6 +113,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               'email': _emailController.text.trim(),
               'phone': _phoneController.text.trim(),
               'bio': _bioController.text.trim(),
+              'photo_url': _photoUrl,
             });
 
         if (mounted) {
@@ -165,6 +197,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildProfilePictureSection() {
+    ImageProvider? imageProvider;
+    if (_photoUrl != null && _photoUrl!.isNotEmpty) {
+      if (_photoUrl!.startsWith('data:image')) {
+        try {
+          final base64Content = _photoUrl!.split(',').last;
+          final bytes = base64Decode(base64Content);
+          imageProvider = MemoryImage(bytes);
+        } catch (e) {
+          debugPrint('Error parsing base64 image: $e');
+        }
+      } else {
+        imageProvider = NetworkImage(_photoUrl!);
+      }
+    }
+
     return Column(
       children: [
         Stack(
@@ -184,13 +231,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
                 color: AppColors.surfaceContainerHighest,
               ),
-              child: _photoUrl != null && _photoUrl!.isNotEmpty
+              child: imageProvider != null
                   ? ClipOval(
-                      child: Image.network(
-                        _photoUrl!,
+                      child: Image(
+                        image: imageProvider,
                         fit: BoxFit.cover,
                         width: 128,
                         height: 128,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.person,
+                          size: 64,
+                          color: AppColors.outline,
+                        ),
                       ),
                     )
                   : const Icon(
@@ -202,24 +254,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Positioned(
               bottom: 0,
               right: 0,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  color: AppColors.onPrimary,
-                  size: 20,
+              child: GestureDetector(
+                onTap: _pickImageFromDevice,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.edit,
+                    color: AppColors.onPrimary,
+                    size: 20,
+                  ),
                 ),
               ),
             ),

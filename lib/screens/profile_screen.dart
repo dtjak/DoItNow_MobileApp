@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -132,20 +133,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   color: AppColors.surfaceContainerHighest,
                 ),
-                child: _photoUrl != null && _photoUrl!.isNotEmpty
-                    ? ClipOval(
+                child: () {
+                  if (_photoUrl != null && _photoUrl!.isNotEmpty) {
+                    if (_photoUrl!.startsWith('data:image')) {
+                      try {
+                        final base64Content = _photoUrl!.split(',').last;
+                        final bytes = base64Decode(base64Content);
+                        return ClipOval(
+                          child: Image.memory(
+                            bytes,
+                            fit: BoxFit.cover,
+                            width: 96,
+                            height: 96,
+                          ),
+                        );
+                      } catch (e) {
+                        debugPrint('Error parsing base64 image: $e');
+                      }
+                    } else {
+                      return ClipOval(
                         child: Image.network(
                           _photoUrl!,
                           fit: BoxFit.cover,
                           width: 96,
                           height: 96,
+                          errorBuilder: (context, error, stackTrace) => const Icon(
+                            Icons.person,
+                            size: 48,
+                            color: AppColors.outline,
+                          ),
                         ),
-                      )
-                    : const Icon(
-                        Icons.person,
-                        size: 48,
-                        color: AppColors.outline,
-                      ),
+                      );
+                    }
+                  }
+                  return const Icon(
+                    Icons.person,
+                    size: 48,
+                    color: AppColors.outline,
+                  );
+                }(),
               ),
               Positioned(
                 bottom: 0,
@@ -175,6 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           Text(
             _name,
+            textAlign: TextAlign.center,
             style: AppTextStyles.headlineSm.copyWith(
               color: AppColors.onSurface,
             ),

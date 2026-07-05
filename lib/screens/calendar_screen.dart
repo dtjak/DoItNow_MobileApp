@@ -18,6 +18,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDate = DateTime.now();
   final TaskRepository _taskRepository = TaskRepository();
 
+  void _onMonthChanged(DateTime newMonth) {
+    setState(() {
+      _selectedMonth = newMonth;
+      // Reset selected date to today if same month, else 1st of month
+      final today = DateTime.now();
+      if (today.month == newMonth.month && today.year == newMonth.year) {
+        _selectedDate = today;
+      } else {
+        _selectedDate = DateTime(newMonth.year, newMonth.month, 1);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -52,7 +65,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
           final tasks = snapshot.data ?? [];
           final activeTasks = tasks.where((t) => !t.isCompleted).toList();
-          final completedCount = tasks.where((t) => t.isCompleted).length;
 
           // Filter active tasks for the selected date
           final activeTasksForSelectedDate = activeTasks.where((t) {
@@ -75,8 +87,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 _buildCalendarSection(tasks),
                 const SizedBox(height: 24),
                 _buildTaskScheduleSection(context, activeTasksForSelectedDate),
-                const SizedBox(height: 24),
-                _buildBentoCards(completedCount),
               ],
             ),
           );
@@ -118,7 +128,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // Previous month days (faded)
     final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     for (int i = prevMonthLastDay - offset + 1; i <= prevMonthLastDay; i++) {
-      final dayDateTime = DateTime(prevMonth.year, prevMonth.month, i);
       final isSelected = _selectedDate != null &&
           _selectedDate!.day == i &&
           _selectedDate!.month == prevMonth.month &&
@@ -128,10 +137,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         isFaded: true,
         isSelected: isSelected,
         onTap: () {
-          setState(() {
-            _selectedMonth = prevMonth;
-            _selectedDate = dayDateTime;
-          });
+          _onMonthChanged(prevMonth);
         },
       ));
     }
@@ -167,7 +173,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       nextMonthDays += 7;
     }
     for (int i = 1; i <= nextMonthDays; i++) {
-      final dayDateTime = DateTime(nextMonth.year, nextMonth.month, i);
       final isSelected = _selectedDate != null &&
           _selectedDate!.day == i &&
           _selectedDate!.month == nextMonth.month &&
@@ -178,10 +183,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         isFaded: true,
         isSelected: isSelected,
         onTap: () {
-          setState(() {
-            _selectedMonth = nextMonth;
-            _selectedDate = dayDateTime;
-          });
+          _onMonthChanged(nextMonth);
         },
       ));
     }
@@ -205,10 +207,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                monthYearStr,
-                style: AppTextStyles.titleLg.copyWith(
-                  color: AppColors.onSurface,
+              GestureDetector(
+                onTap: () => _showMonthYearPicker(context),
+                child: Row(
+                  children: [
+                    Text(
+                      monthYearStr,
+                      style: AppTextStyles.titleLg.copyWith(
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_drop_down,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ],
                 ),
               ),
               Row(
@@ -219,12 +233,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       color: AppColors.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _selectedMonth = DateTime(
-                          _selectedMonth.year,
-                          _selectedMonth.month - 1,
-                        );
-                      });
+                      final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+                      _onMonthChanged(newMonth);
                     },
                   ),
                   IconButton(
@@ -233,12 +243,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       color: AppColors.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _selectedMonth = DateTime(
-                          _selectedMonth.year,
-                          _selectedMonth.month + 1,
-                        );
-                      });
+                      final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+                      _onMonthChanged(newMonth);
                     },
                   ),
                 ],
@@ -371,7 +377,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             if (formattedDate.isNotEmpty)
               Text(
                 formattedDate,
-                style: AppTextStyles.labelLg.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
+                style: AppTextStyles.labelLg.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
           ],
         ),
@@ -592,100 +601,97 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildBentoCards(int completedCount) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(Icons.bolt, color: AppColors.onPrimaryContainer),
-                    Text(
-                      'Total Tugas',
-                      style: AppTextStyles.labelSm.copyWith(
-                        color: AppColors.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$completedCount',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.onPrimaryContainer,
-                      ),
-                    ),
-                    Text(
-                      'Tugas Selesai',
-                      style: AppTextStyles.labelSm.copyWith(
-                        color: AppColors.onPrimaryContainer.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.auto_awesome, color: AppColors.primary),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tips Produktif',
-                      style: AppTextStyles.titleLg.copyWith(
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Istirahat 5 menit setiap 25 menit belajar.',
-                      style: AppTextStyles.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  bottom: -20,
-                  right: -20,
-                  child: Icon(
-                    Icons.lightbulb,
-                    size: 80,
-                    color: AppColors.onSurfaceVariant.withOpacity(0.1),
+  void _showMonthYearPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final months = [
+              'Jan', 'Feb', 'Mar', 'Apr',
+              'Mei', 'Jun', 'Jul', 'Agu',
+              'Sep', 'Okt', 'Nov', 'Des'
+            ];
+
+            return AlertDialog(
+              backgroundColor: AppColors.surfaceContainerLowest,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left, color: AppColors.primary),
+                    onPressed: () {
+                      setDialogState(() {
+                        _selectedMonth = DateTime(_selectedMonth.year - 1, _selectedMonth.month);
+                      });
+                    },
                   ),
+                  Text(
+                    '${_selectedMonth.year}',
+                    style: AppTextStyles.titleLg.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, color: AppColors.primary),
+                    onPressed: () {
+                      setDialogState(() {
+                        _selectedMonth = DateTime(_selectedMonth.year + 1, _selectedMonth.month);
+                      });
+                    },
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 300,
+                height: 200,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 1.5,
+                  ),
+                  itemCount: 12,
+                  itemBuilder: (context, index) {
+                    final isCurrentMonth = _selectedMonth.month == index + 1;
+                    return GestureDetector(
+                      onTap: () {
+                        final newMonth = DateTime(_selectedMonth.year, index + 1);
+                        Navigator.pop(context);
+                        _onMonthChanged(newMonth);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isCurrentMonth ? AppColors.primary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isCurrentMonth ? AppColors.primary : AppColors.outlineVariant,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          months[index],
+                          style: AppTextStyles.labelLg.copyWith(
+                            color: isCurrentMonth ? AppColors.onPrimary : AppColors.onSurface,
+                            fontWeight: isCurrentMonth ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          ),
-        ),
-      ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
