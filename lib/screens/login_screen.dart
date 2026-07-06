@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _errorMessage = 'Format email tidak valid.';
             break;
           default:
-            _errorMessage = 'Login gagal. Coba lagi.';
+            _errorMessage = 'Gagal masuk. Coba lagi.';
         }
       });
     } finally {
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.task_alt,
                               size: 32,
                               color: AppColors.onPrimaryContainer,
@@ -203,26 +203,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintStyle: AppTextStyles.bodyLg.copyWith(
                                   color: AppColors.outline.withOpacity(0.5),
                                 ),
-                                prefixIcon: const Icon(
+                                prefixIcon: Icon(
                                   Icons.mail_outline,
                                   color: AppColors.outline,
                                   size: 20,
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.outlineVariant,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.outlineVariant,
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.primary,
                                     width: 1.5,
                                   ),
@@ -243,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Password',
+                                  'Kata Sandi',
                                   style: AppTextStyles.labelSm.copyWith(
                                     color: AppColors.onSurfaceVariant,
                                   ),
@@ -251,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 GestureDetector(
                                   onTap: () {},
                                   child: Text(
-                                    'Lupa Password?',
+                                    'Lupa Kata Sandi?',
                                     style: AppTextStyles.labelSm.copyWith(
                                       color: AppColors.primary,
                                     ),
@@ -271,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 hintStyle: AppTextStyles.bodyLg.copyWith(
                                   color: AppColors.outline.withOpacity(0.5),
                                 ),
-                                prefixIcon: const Icon(
+                                prefixIcon: Icon(
                                   Icons.lock_outline,
                                   color: AppColors.outline,
                                   size: 20,
@@ -291,19 +291,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.outlineVariant,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.outlineVariant,
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
+                                  borderSide: BorderSide(
                                     color: AppColors.primary,
                                     width: 1.5,
                                   ),
@@ -336,7 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   elevation: 2,
                                 ),
                                 icon: _isLoading
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: CircularProgressIndicator(
@@ -346,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       )
                                     : const Icon(Icons.arrow_forward, size: 20),
                                 label: Text(
-                                  _isLoading ? 'Loading...' : 'Login',
+                                  _isLoading ? 'Memuat...' : 'Masuk',
                                   style: AppTextStyles.labelLg.copyWith(
                                     color: AppColors.onPrimary,
                                   ),
@@ -359,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Row(
                                 children: [
-                                  const Expanded(
+                                  Expanded(
                                     child: Divider(
                                       color: AppColors.surfaceContainerHighest,
                                     ),
@@ -375,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   ),
-                                  const Expanded(
+                                  Expanded(
                                     child: Divider(
                                       color: AppColors.surfaceContainerHighest,
                                     ),
@@ -419,7 +419,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  side: const BorderSide(
+                                  side: BorderSide(
                                     color: AppColors.outlineVariant,
                                   ),
                                   backgroundColor:
@@ -428,14 +428,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
-                                      Icons.g_mobiledata,
-                                      size: 24,
-                                      color: AppColors.onSurface,
+                                    Image.asset(
+                                      'assets/images/google_logo.png',
+                                      width: 20,
+                                      height: 20,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 10),
                                     Text(
-                                      'Login with Google',
+                                      'Masuk dengan Google',
                                       style: AppTextStyles.labelLg.copyWith(
                                         color: AppColors.onSurface,
                                       ),

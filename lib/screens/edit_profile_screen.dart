@@ -90,7 +90,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Nama dan email tidak boleh kosong.'),
           backgroundColor: AppColors.error,
         ),
@@ -118,7 +118,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Profil berhasil diperbarui.'),
               backgroundColor: AppColors.primary,
             ),
@@ -163,7 +163,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -238,14 +238,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         fit: BoxFit.cover,
                         width: 128,
                         height: 128,
-                        errorBuilder: (context, error, stackTrace) => const Icon(
+                        errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.person,
                           size: 64,
                           color: AppColors.outline,
                         ),
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.person,
                       size: 64,
                       color: AppColors.outline,
@@ -270,7 +270,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
                     color: AppColors.onPrimary,
                     size: 20,
@@ -287,7 +287,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Update informasi akun Anda',
+          'Perbarui informasi akun Anda',
           style: AppTextStyles.labelSm.copyWith(
             color: AppColors.onSurfaceVariant,
           ),
@@ -362,15 +362,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.outlineVariant),
+              borderSide: BorderSide(color: AppColors.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.outlineVariant),
+              borderSide: BorderSide(color: AppColors.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
           ),
         ),

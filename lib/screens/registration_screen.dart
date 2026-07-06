@@ -70,7 +70,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Registrasi berhasil! Silakan masuk dengan akun baru Anda.'),
           backgroundColor: AppColors.primary,
         ),
@@ -140,7 +140,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.task_alt,
                         color: AppColors.primary,
                         size: 24,
@@ -170,11 +170,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               Container(
                                 width: 64,
                                 height: 64,
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   color: AppColors.primaryContainer,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.check_box,
                                   size: 32,
                                   color: AppColors.onPrimaryContainer,
@@ -267,7 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 const SizedBox(height: 16),
 
                                 // Password Field
-                                _buildLabel('Password'),
+                                _buildLabel('Kata Sandi'),
                                 const SizedBox(height: 4),
                                 TextFormField(
                                   controller: _passwordController,
@@ -280,7 +280,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     hintStyle: AppTextStyles.bodyMd.copyWith(
                                       color: AppColors.outline.withOpacity(0.5),
                                     ),
-                                    prefixIcon: const Icon(
+                                    prefixIcon: Icon(
                                       Icons.lock_outline,
                                       color: AppColors.outline,
                                       size: 20,
@@ -300,19 +300,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
+                                      borderSide: BorderSide(
                                         color: AppColors.outlineVariant,
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
+                                      borderSide: BorderSide(
                                         color: AppColors.outlineVariant,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(
+                                      borderSide: BorderSide(
                                         color: AppColors.primary,
                                         width: 1.5,
                                       ),
@@ -345,7 +345,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       elevation: 2,
                                     ),
                                     icon: _isLoading
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             width: 20,
                                             height: 20,
                                             child: CircularProgressIndicator(
@@ -359,7 +359,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           ),
                                     label: Text(
                                       _isLoading
-                                          ? 'Loading...'
+                                          ? 'Memuat...'
                                           : 'Daftar Sekarang',
                                       style: AppTextStyles.labelLg.copyWith(
                                         color: AppColors.onPrimary,
@@ -375,7 +375,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   ),
                                   child: Row(
                                     children: [
-                                      const Expanded(
+                                      Expanded(
                                         child: Divider(
                                           color: AppColors.outlineVariant,
                                         ),
@@ -391,7 +391,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           ),
                                         ),
                                       ),
-                                      const Expanded(
+                                      Expanded(
                                         child: Divider(
                                           color: AppColors.outlineVariant,
                                         ),
@@ -433,7 +433,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      side: const BorderSide(
+                                      side: BorderSide(
                                         color: AppColors.outlineVariant,
                                       ),
                                       backgroundColor: AppColors.surface,
@@ -442,12 +442,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        const Icon(
-                                          Icons.g_mobiledata,
-                                          size: 24,
-                                          color: AppColors.onSurface,
+                                        Image.asset(
+                                          'assets/images/google_logo.png',
+                                          width: 20,
+                                          height: 20,
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 10),
                                         Text(
                                           'Daftar dengan Google',
                                           style: AppTextStyles.labelLg.copyWith(
@@ -526,15 +526,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         prefixIcon: Icon(icon, color: AppColors.outline, size: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: AppColors.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: AppColors.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
         filled: true,
         fillColor: AppColors.surface,

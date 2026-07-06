@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final String currentRoute;
@@ -11,6 +12,16 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to the theme controller directly so the footer repaints the
+    // instant dark mode is toggled, even though this widget may be `const`
+    // and otherwise skipped when its ancestor rebuilds.
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) => _buildBar(context),
+    );
+  }
+
+  Widget _buildBar(BuildContext context) {
     final isDashboard = currentRoute == '/dashboard';
 
     return Container(
@@ -19,7 +30,7 @@ class CustomBottomNavBar extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -36,33 +47,33 @@ class CustomBottomNavBar extends StatelessWidget {
                 _buildNavItem(
                   context: context,
                   icon: Icons.dashboard,
-                  label: 'Dashboard',
+                  label: 'Beranda',
                   targetRoute: '/dashboard',
                   isActive: currentRoute == '/dashboard',
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.calendar_month,
-                  label: 'Calendar',
+                  label: 'Kalender',
                   targetRoute: '/calendar',
                   isActive: currentRoute == '/calendar',
                 ),
-                
+
                 // Animating/entering "+" button in the middle when not on Dashboard
                 if (!isDashboard)
                   _buildCenterAddButton(context),
-                
+
                 _buildNavItem(
                   context: context,
                   icon: Icons.archive,
-                  label: 'Archive',
+                  label: 'Arsip',
                   targetRoute: '/archive',
                   isActive: currentRoute == '/archive',
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.settings,
-                  label: 'Settings',
+                  label: 'Pengaturan',
                   targetRoute: '/profile',
                   isActive: currentRoute == '/profile',
                 ),
@@ -77,6 +88,19 @@ class CustomBottomNavBar extends StatelessWidget {
   Widget _buildCenterAddButton(BuildContext context) {
     return Hero(
       tag: 'add_button',
+      // Arc motion + curved timing makes the button glide between the
+      // dashboard FAB (bottom-right) and the centre of the nav bar.
+      createRectTween: (begin, end) =>
+          MaterialRectArcTween(begin: begin, end: end),
+      flightShuttleBuilder: (context, animation, direction, fromCtx, toCtx) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOutCubic,
+          ),
+          child: toCtx.widget,
+        );
+      },
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
@@ -87,7 +111,7 @@ class CustomBottomNavBar extends StatelessWidget {
           child: Container(
             width: 48,
             height: 48,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.primary,
               shape: BoxShape.circle,
               boxShadow: [
@@ -98,7 +122,7 @@ class CustomBottomNavBar extends StatelessWidget {
                 )
               ]
             ),
-            child: const Icon(
+            child: Icon(
               Icons.add,
               color: AppColors.onPrimary,
               size: 28,

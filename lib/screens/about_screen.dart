@@ -14,7 +14,7 @@ class AboutScreen extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -294,12 +294,12 @@ class AboutScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Privacy Policy',
+              'Kebijakan Privasi',
               style: AppTextStyles.labelSm.copyWith(color: AppColors.primary),
             ),
             const SizedBox(width: 16),
             Text(
-              'Terms of Service',
+              'Ketentuan Layanan',
               style: AppTextStyles.labelSm.copyWith(color: AppColors.primary),
             ),
           ],

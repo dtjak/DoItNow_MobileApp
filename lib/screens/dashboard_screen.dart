@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/task_list_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -24,14 +25,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Pribadi',
   ];
   final TaskRepository _taskRepository = TaskRepository();
-  final PageController _pinnedPageController = PageController();
-  int _activePinnedPage = 0;
-
-  @override
-  void dispose() {
-    _pinnedPageController.dispose();
-    super.dispose();
-  }
+  // Sorting for the "Daftar Tugas" list: null = default (newest), or by
+  // priority / deadline.
+  String _sortMode = 'default';
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +67,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   final generalTasks = filteredTasks
                       .where((task) => !task.isPinned && !task.isCompleted)
                       .toList();
+                  _applySort(generalTasks);
 
                   return SingleChildScrollView(
                     child: Padding(
@@ -94,16 +91,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'add_button',
-        onPressed: () {
-          Navigator.pushNamed(context, '/add_task');
-        },
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        elevation: 8,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 32),
+      floatingActionButton: Hero(
+        tag: 'add_button',
+        createRectTween: (begin, end) =>
+            MaterialRectArcTween(begin: begin, end: end),
+        child: FloatingActionButton(
+          // heroTag null so the FAB doesn't create its own Hero; the wrapping
+          // Hero above controls the (arc) flight between screens.
+          heroTag: null,
+          onPressed: () {
+            Navigator.pushNamed(context, '/add_task');
+          },
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.onPrimary,
+          elevation: 8,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add, size: 32),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: const CustomBottomNavBar(currentRoute: '/dashboard'),
@@ -122,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.task_alt, color: AppColors.primary, size: 24),
+              Icon(Icons.task_alt, color: AppColors.primary, size: 24),
               const SizedBox(width: 8),
               Text(
                 'DoItNow',
@@ -135,8 +139,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           Row(
             children: [
-              const Icon(Icons.search, color: AppColors.onSurfaceVariant),
-              const SizedBox(width: 16),
               GestureDetector(
                 onTap: () async {
                   await Navigator.pushNamed(context, '/profile');
@@ -178,7 +180,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.outlineVariant),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person,
                           size: 18,
                           color: AppColors.outline,
@@ -200,75 +202,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return const SizedBox.shrink();
     }
 
-    final totalTasks = pinnedTasks.length;
-
-    // If 3 or fewer tasks, render directly so height wraps content perfectly
-    if (totalTasks <= 3) {
-      final largeTask = pinnedTasks[0];
-      List<Widget> smallCardsRow = [];
-      if (totalTasks > 1) {
-        final task1 = pinnedTasks[1];
-        smallCardsRow.add(
-          Expanded(child: _buildSmallPinnedTaskCard(task: task1)),
-        );
-        if (totalTasks > 2) {
-          final task2 = pinnedTasks[2];
-          smallCardsRow.add(const SizedBox(width: 12));
-          smallCardsRow.add(
-            Expanded(child: _buildSmallPinnedTaskCard(task: task2)),
-          );
-        } else {
-          smallCardsRow.add(const SizedBox(width: 12));
-          smallCardsRow.add(const Expanded(child: SizedBox.shrink()));
-        }
-      }
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.push_pin, color: AppColors.primary),
-                const SizedBox(width: 8),
-                Text(
-                  'Tugas Penting',
-                  style: AppTextStyles.titleLg.copyWith(
-                    color: AppColors.onSurface,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildPinnedTaskCard(task: largeTask),
-            if (smallCardsRow.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: smallCardsRow,
-              ),
-            ],
-          ],
-        ),
-      );
-    }
-
-    // Split pinnedTasks into pages of up to 3 tasks each
-    List<List<TaskModel>> pages = [];
-    for (int i = 0; i < pinnedTasks.length; i += 3) {
-      int end = i + 3;
-      if (end > pinnedTasks.length) end = pinnedTasks.length;
-      pages.add(pinnedTasks.sublist(i, end));
-    }
-
-    final pageCount = pages.length;
-
-    // Reset active page index if it out of bounds after tasks modification
-    if (_activePinnedPage >= pageCount) {
-      _activePinnedPage = 0;
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -276,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              const Icon(Icons.push_pin, color: AppColors.primary),
+              Icon(Icons.push_pin, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Tugas Penting',
@@ -287,246 +220,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        // Horizontally scrollable row of compact pinned cards. Swipe/drag
+        // sideways to see the rest.
         SizedBox(
-          height: 250,
-          child: PageView.builder(
-            controller: _pinnedPageController,
-            onPageChanged: (int index) {
-              setState(() {
-                _activePinnedPage = index;
-              });
-            },
-            itemCount: pageCount,
-            itemBuilder: (context, pageIndex) {
-              final pageTasks = pages[pageIndex];
-              final largeTask = pageTasks[0];
-              List<Widget> smallCardsRow = [];
-              
-              if (pageTasks.length > 1) {
-                final task1 = pageTasks[1];
-                smallCardsRow.add(
-                  Expanded(child: _buildSmallPinnedTaskCard(task: task1)),
-                );
-                if (pageTasks.length > 2) {
-                  final task2 = pageTasks[2];
-                  smallCardsRow.add(const SizedBox(width: 12));
-                  smallCardsRow.add(
-                    Expanded(child: _buildSmallPinnedTaskCard(task: task2)),
-                  );
-                } else {
-                  smallCardsRow.add(const SizedBox(width: 12));
-                  smallCardsRow.add(const Expanded(child: SizedBox.shrink()));
-                }
-              }
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    _buildPinnedTaskCard(task: largeTask),
-                    if (smallCardsRow.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: smallCardsRow,
-                      ),
-                    ],
-                  ],
-                ),
+          height: 104,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: pinnedTasks.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return SizedBox(
+                width: 190,
+                child: _buildSmallPinnedTaskCard(task: pinnedTasks[index]),
               );
             },
           ),
         ),
-        if (pageCount > 1) ...[
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              pageCount,
-              (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: _activePinnedPage == index ? 16 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: _activePinnedPage == index
-                      ? AppColors.primary
-                      : AppColors.outlineVariant,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
 
-  Widget _buildPinnedTaskCard({required TaskModel task}) {
-    Color labelBgColor;
-    Color labelTextColor;
-    switch (task.category) {
-      case 'Kampus':
-        labelBgColor = AppColors.secondaryFixed;
-        labelTextColor = AppColors.onSecondaryFixed;
-        break;
-      case 'Pribadi':
-        labelBgColor = AppColors.tertiaryFixed;
-        labelTextColor = AppColors.onTertiaryFixed;
-        break;
-      case 'Kerja':
-        labelBgColor = AppColors.primaryFixed;
-        labelTextColor = AppColors.onPrimaryFixed;
-        break;
-      case 'Organisasi':
-      default:
-        labelBgColor = AppColors.secondaryFixedDim;
-        labelTextColor = AppColors.onSecondaryFixedVariant;
-        break;
-    }
-
-    Color borderColor;
-    IconData rightIcon;
-    Color rightIconColor;
-    switch (task.priority) {
-      case 'Low':
-        borderColor = AppColors.tertiary;
-        rightIcon = Icons.arrow_downward;
-        rightIconColor = AppColors.tertiary;
-        break;
-      case 'Medium':
-        borderColor = Colors.amber[600]!;
-        rightIcon = Icons.priority_high;
-        rightIconColor = Colors.amber[600]!;
-        break;
-      case 'High':
-      default:
-        borderColor = AppColors.error;
-        rightIcon = Icons.priority_high;
-        rightIconColor = AppColors.error;
-        break;
-    }
-
-    final subtitle = task.deadline != null
-        ? DateFormat('dd MMM, HH:mm').format(task.deadline!)
-        : 'Tanpa tenggat';
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/task_detail', arguments: task);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-          border: Border(left: BorderSide(color: borderColor, width: 4)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: labelBgColor,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      task.category.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ).copyWith(color: labelTextColor),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    task.title,
-                    style: AppTextStyles.titleLg.copyWith(
-                      color: AppColors.onSurface,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.event,
-                        size: 14,
-                        color: AppColors.outline,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        subtitle,
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Icon(rightIcon, color: rightIconColor),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSmallPinnedTaskCard({required TaskModel task}) {
-    Color labelBgColor;
-    Color labelTextColor;
-    switch (task.category) {
-      case 'Kampus':
-        labelBgColor = AppColors.secondaryFixed;
-        labelTextColor = AppColors.onSecondaryFixed;
-        break;
-      case 'Pribadi':
-        labelBgColor = AppColors.tertiaryFixed;
-        labelTextColor = AppColors.onTertiaryFixed;
-        break;
-      case 'Kerja':
-        labelBgColor = AppColors.primaryFixed;
-        labelTextColor = AppColors.onPrimaryFixed;
-        break;
-      case 'Organisasi':
-      default:
-        labelBgColor = AppColors.secondaryFixedDim;
-        labelTextColor = AppColors.onSecondaryFixedVariant;
-        break;
-    }
-
-    Color borderColor;
-    switch (task.priority) {
-      case 'Low':
-        borderColor = AppColors.tertiary;
-        break;
-      case 'Medium':
-        borderColor = Colors.amber[600]!;
-        break;
-      case 'High':
-      default:
-        borderColor = AppColors.error;
-        break;
-    }
+    final labelBgColor = categoryBgFor(task.category);
+    final labelTextColor = categoryTextFor(task.category);
+    final borderColor = priorityColorFor(task.priority);
 
     final subtitle = task.deadline != null
         ? DateFormat('dd MMM, HH:mm').format(task.deadline!)
@@ -537,13 +256,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Navigator.pushNamed(context, '/task_detail', arguments: task);
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -579,11 +298,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 11, color: AppColors.outline),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            Row(
+              children: [
+                Icon(Icons.event, size: 12, color: AppColors.outline),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 11, color: AppColors.outline),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -642,15 +369,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Sorts the task list in-place according to [_sortMode].
+  void _applySort(List<TaskModel> tasks) {
+    switch (_sortMode) {
+      case 'priority':
+        const rank = {'High': 0, 'Medium': 1, 'Low': 2};
+        tasks.sort((a, b) =>
+            (rank[a.priority] ?? 3).compareTo(rank[b.priority] ?? 3));
+        break;
+      case 'deadline':
+        tasks.sort((a, b) {
+          // Tasks without a deadline go to the end.
+          if (a.deadline == null && b.deadline == null) return 0;
+          if (a.deadline == null) return 1;
+          if (b.deadline == null) return -1;
+          return a.deadline!.compareTo(b.deadline!);
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
   Widget _buildTaskListSection(List<TaskModel> generalTasks) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Daftar Tugas',
-            style: AppTextStyles.titleLg.copyWith(color: AppColors.onSurface),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Daftar Tugas',
+                style:
+                    AppTextStyles.titleLg.copyWith(color: AppColors.onSurface),
+              ),
+              PopupMenuButton<String>(
+                initialValue: _sortMode,
+                tooltip: 'Urutkan tugas',
+                onSelected: (value) {
+                  setState(() {
+                    _sortMode = value;
+                  });
+                },
+                color: AppColors.surfaceContainerLowest,
+                icon: Icon(Icons.filter_list, color: AppColors.primary),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'default',
+                    child: Text(
+                      'Bawaan (terbaru)',
+                      style: TextStyle(color: AppColors.onSurface),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'priority',
+                    child: Text(
+                      'Urutkan prioritas',
+                      style: TextStyle(color: AppColors.onSurface),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'deadline',
+                    child: Text(
+                      'Urutkan deadline terdekat',
+                      style: TextStyle(color: AppColors.onSurface),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           if (generalTasks.isEmpty)
@@ -672,136 +461,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               itemCount: generalTasks.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                return _buildTaskCard(
-                  context: context,
+                return TaskListCard(
                   task: generalTasks[index],
+                  repository: _taskRepository,
                 );
               },
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTaskCard({
-    required BuildContext context,
-    required TaskModel task,
-  }) {
-    final time = task.deadline != null
-        ? DateFormat('dd MMM, HH:mm').format(task.deadline!)
-        : 'Tanpa tenggat';
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/task_detail', arguments: task);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () async {
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                try {
-                  await _taskRepository.updateTaskCompletion(task.id, true);
-                  scaffoldMessenger.clearSnackBars();
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: const Text('Tugas berhasil diselesaikan!'),
-                      duration: const Duration(seconds: 3),
-                      action: SnackBarAction(
-                        label: 'Urungkan',
-                        textColor: AppColors.primaryFixedDim,
-                        onPressed: () async {
-                          try {
-                            await _taskRepository.updateTaskCompletion(
-                              task.id,
-                              false,
-                            );
-                          } catch (e) {
-                            debugPrint('Gagal mengurungkan tugas: $e');
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                } catch (e) {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Gagal menyelesaikan tugas: $e')),
-                  );
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  right: 12.0,
-                  top: 8.0,
-                  bottom: 8.0,
-                ),
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.outlineVariant,
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.title,
-                    style: AppTextStyles.bodyMd.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule,
-                        size: 14,
-                        color: AppColors.outline,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        time,
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.outline),
-          ],
-        ),
       ),
     );
   }

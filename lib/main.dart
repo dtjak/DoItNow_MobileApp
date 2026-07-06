@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,8 +15,21 @@ import 'screens/profile_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/about_screen.dart';
 import 'theme/app_theme.dart';
+import 'theme/theme_controller.dart';
 
 import 'services/notification_service.dart';
+
+// Allows swipe/drag gestures (e.g. the pinned tasks PageView) to respond to
+// mouse drag as well as touch. By default Flutter's MaterialScrollBehavior
+// only accepts touch/stylus for drag-to-scroll, so testing on Windows/desktop
+// with a mouse would make PageView look completely unswipeable.
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        ...super.dragDevices,
+        PointerDeviceKind.mouse,
+      };
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +40,9 @@ void main() async {
   await notificationService.init();
   await notificationService.requestPermissions();
 
+  // Load persisted dark/light mode preference before first frame.
+  await ThemeController.instance.load();
+
   runApp(const MyApp());
 }
 
@@ -34,12 +51,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'DoItNow',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
-      routes: {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ThemeController.instance,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          title: 'DoItNow',
+          debugShowCheckedModeBanner: false,
+          scrollBehavior: AppScrollBehavior(),
+          theme: AppTheme.theme,
+          home: const SplashScreen(),
+          routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegistrationScreen(),
         '/dashboard': (context) => const DashboardScreen(),
@@ -49,8 +70,10 @@ class MyApp extends StatelessWidget {
         '/calendar': (context) => const CalendarScreen(),
         '/archive': (context) => const ArchiveScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/edit_profile': (context) => const EditProfileScreen(),
-        '/about': (context) => const AboutScreen(),
+            '/edit_profile': (context) => const EditProfileScreen(),
+            '/about': (context) => const AboutScreen(),
+          },
+        );
       },
     );
   }

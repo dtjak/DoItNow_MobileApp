@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../utils/snackbar_helper.dart';
 
 class ArchiveScreen extends StatefulWidget {
   const ArchiveScreen({super.key});
@@ -35,7 +36,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -195,8 +196,8 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         break;
       case 'Medium':
         priorityLabel = 'MED';
-        priorityBg = AppColors.secondaryFixed;
-        priorityColor = AppColors.onSecondaryFixedVariant;
+        priorityBg = Colors.amber.shade100;
+        priorityColor = Colors.amber.shade900;
         break;
       case 'High':
       default:
@@ -231,35 +232,29 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
               final scaffoldMessenger = ScaffoldMessenger.of(context);
               try {
                 await _taskRepository.updateTaskCompletion(task.id, false);
-                scaffoldMessenger.clearSnackBars();
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'Tugas dikembalikan ke daftar aktif!',
-                    ),
-                    duration: const Duration(seconds: 3),
-                    action: SnackBarAction(
-                      label: 'BATALKAN',
-                      textColor: Colors.amber,
-                      onPressed: () async {
-                        try {
-                          await _taskRepository.updateTaskCompletion(
-                            task.id,
-                            true,
-                          );
-                        } catch (e) {
-                          scaffoldMessenger.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Gagal menyelesaikan kembali: $e',
-                              ),
+                if (context.mounted) {
+                  showAutoDismissSnackBar(
+                    context,
+                    message: 'Tugas dikembalikan ke daftar aktif!',
+                    actionLabel: 'Urungkan',
+                    onActionPressed: () async {
+                      try {
+                        await _taskRepository.updateTaskCompletion(
+                          task.id,
+                          true,
+                        );
+                      } catch (e) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Gagal menyelesaikan kembali: $e',
                             ),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                );
+                          ),
+                        );
+                      }
+                    },
+                  );
+                }
               } catch (e) {
                 scaffoldMessenger.showSnackBar(
                   SnackBar(content: Text('Gagal memulihkan tugas: $e')),
@@ -269,7 +264,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
             child: Container(
               width: 24,
               height: 24,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.tertiary,
                 shape: BoxShape.circle,
               ),
@@ -323,7 +318,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.schedule,
                       size: 14,
                       color: AppColors.outline,
@@ -341,7 +336,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.chevron_right, color: AppColors.outline),
+            icon: Icon(Icons.chevron_right, color: AppColors.outline),
             onPressed: () {
               Navigator.pushNamed(context, '/task_detail', arguments: task);
             },

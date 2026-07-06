@@ -73,4 +73,13 @@ class TaskRepository {
     await _tasksCollection.doc(taskId).delete();
     await NotificationService().cancelNotification(taskId);
   }
+
+  // Restore a previously deleted task (used for "Urungkan" undo actions)
+  Future<void> restoreTask(TaskModel task) async {
+    await _tasksCollection.doc(task.id).set(task.toMap());
+
+    if (task.deadline != null && !task.isCompleted) {
+      await NotificationService().scheduleTaskNotification(task);
+    }
+  }
 }

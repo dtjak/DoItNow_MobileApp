@@ -120,8 +120,8 @@ class NotificationService {
 
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         'task_reminders',
-        'Task Reminders',
-        channelDescription: 'Notifications for task deadlines',
+        'Pengingat Tugas',
+        channelDescription: 'Notifikasi untuk tenggat tugas',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
+import '../widgets/task_list_card.dart';
 
 class EditTaskScreen extends StatefulWidget {
   const EditTaskScreen({super.key});
@@ -149,7 +150,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
+          icon: Icon(Icons.close, color: AppColors.onSurfaceVariant),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -243,7 +244,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   shadowColor: AppColors.primary.withOpacity(0.4),
                 ),
                 child: _isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
@@ -299,15 +300,15 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: AppColors.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: BorderSide(color: AppColors.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
         ),
       ),
     );
@@ -428,7 +429,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                label,
+                priorityLabelId(label),
                 style: AppTextStyles.labelLg.copyWith(
                   color: isSelected ? textColor : AppColors.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -465,7 +466,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today,
                     size: 20,
                     color: AppColors.outline,
@@ -499,7 +500,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.schedule,
                     size: 20,
                     color: AppColors.outline,
@@ -546,7 +547,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               color: AppColors.tertiaryContainer.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.push_pin, color: AppColors.tertiary),
+            child: Icon(Icons.push_pin, color: AppColors.tertiary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -554,14 +555,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pin Task',
+                  'Sematkan Tugas',
                   style: AppTextStyles.titleLg.copyWith(
                     color: AppColors.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Keep this task at the top of your list',
+                  'Simpan tugas ini di bagian atas daftar',
                   style: AppTextStyles.bodyMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),

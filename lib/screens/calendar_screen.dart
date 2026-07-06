@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/task_list_card.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -42,7 +43,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -218,7 +219,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.arrow_drop_down,
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -228,7 +229,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.chevron_left,
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -238,7 +239,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     },
                   ),
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.chevron_right,
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -299,7 +300,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
@@ -417,187 +418,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         else
           Column(
             children: activeTasks.map((task) {
-              Color priorityColor;
-              Color priorityBg;
-              if (task.priority.toLowerCase() == 'high') {
-                priorityColor = AppColors.error;
-                priorityBg = AppColors.errorContainer;
-              } else if (task.priority.toLowerCase() == 'medium' ||
-                  task.priority.toLowerCase() == 'med') {
-                priorityColor = AppColors.secondary;
-                priorityBg = AppColors.secondaryFixed;
-              } else {
-                priorityColor = AppColors.tertiary;
-                priorityBg = AppColors.tertiaryFixed;
-              }
-
-              String timeStr = 'Tanpa tenggat';
-              if (task.deadline != null) {
-                timeStr = DateFormat('HH:mm').format(task.deadline!);
-              }
-
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
-                child: _buildTaskCard(
-                  context: context,
-                  priorityLabel: task.priority.toUpperCase(),
-                  priorityColor: priorityColor,
-                  priorityBg: priorityBg,
-                  category: task.category,
-                  title: task.title,
-                  time: timeStr,
+                child: TaskListCard(
                   task: task,
+                  repository: _taskRepository,
                 ),
               );
             }).toList(),
           ),
       ],
-    );
-  }
-
-  Widget _buildTaskCard({
-    required BuildContext context,
-    required String priorityLabel,
-    required Color priorityColor,
-    required Color priorityBg,
-    required String category,
-    required String title,
-    required String time,
-    required TaskModel task,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/task_detail', arguments: task);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () async {
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                try {
-                  await _taskRepository.updateTaskCompletion(task.id, true);
-                  scaffoldMessenger.clearSnackBars();
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(
-                      content: const Text('Tugas berhasil diselesaikan!'),
-                      duration: const Duration(seconds: 3),
-                      action: SnackBarAction(
-                        label: 'Urungkan',
-                        textColor: AppColors.primaryFixedDim,
-                        onPressed: () async {
-                          try {
-                            await _taskRepository.updateTaskCompletion(task.id, false);
-                          } catch (e) {
-                            debugPrint('Gagal mengurungkan tugas: $e');
-                          }
-                        },
-                      ),
-                    ),
-                  );
-                } catch (e) {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Gagal menyelesaikan tugas: $e')),
-                  );
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12.0, top: 8.0, bottom: 8.0),
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.outlineVariant, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: priorityBg,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          priorityLabel,
-                          style: AppTextStyles.labelSm.copyWith(
-                            color: priorityColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        category,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyMd.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.schedule,
-                        size: 14,
-                        color: AppColors.outline,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        time,
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.outline),
-          ],
-        ),
-      ),
     );
   }
 
@@ -622,7 +452,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left, color: AppColors.primary),
+                    icon: Icon(Icons.chevron_left, color: AppColors.primary),
                     onPressed: () {
                       setDialogState(() {
                         _selectedMonth = DateTime(_selectedMonth.year - 1, _selectedMonth.month);
@@ -637,7 +467,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right, color: AppColors.primary),
+                    icon: Icon(Icons.chevron_right, color: AppColors.primary),
                     onPressed: () {
                       setDialogState(() {
                         _selectedMonth = DateTime(_selectedMonth.year + 1, _selectedMonth.month);

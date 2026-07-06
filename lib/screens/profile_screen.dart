@@ -5,6 +5,7 @@ import '../services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_controller.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,10 +17,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isNotificationEnabled = true;
-  bool _isDarkModeEnabled = false;
+  bool _isDarkModeEnabled = ThemeController.instance.isDark;
 
-  String _name = 'Loading...';
-  String _email = 'Loading...';
+  String _name = 'Memuat...';
+  String _email = 'Memuat...';
   String? _photoUrl;
   String _phone = '';
   String _bio = '';
@@ -90,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -178,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fit: BoxFit.cover,
                           width: 96,
                           height: 96,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
+                          errorBuilder: (context, error, stackTrace) => Icon(
                             Icons.person,
                             size: 48,
                             color: AppColors.outline,
@@ -187,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     }
                   }
-                  return const Icon(
+                  return Icon(
                     Icons.person,
                     size: 48,
                     color: AppColors.outline,
@@ -236,13 +237,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           if (_phone.isNotEmpty || _bio.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Divider(color: AppColors.outlineVariant),
+            Divider(color: AppColors.outlineVariant),
             const SizedBox(height: 12),
             if (_phone.isNotEmpty)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.phone, size: 16, color: AppColors.outline),
+                  Icon(Icons.phone, size: 16, color: AppColors.outline),
                   const SizedBox(width: 8),
                   Text(
                     _phone,
@@ -289,22 +290,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildSettingsItem(
             icon: Icons.person,
             title: 'Edit Profil',
-            trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
+            trailing: Icon(Icons.chevron_right, color: AppColors.outline),
             onTap: () async {
               await Navigator.pushNamed(context, '/edit_profile');
               _loadUserProfile();
             },
           ),
-          const Divider(height: 1, color: AppColors.surfaceVariant),
+          Divider(height: 1, color: AppColors.surfaceVariant),
           _buildSettingsItem(
             icon: Icons.info,
             title: 'Tentang DoItNow',
-            trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
+            trailing: Icon(Icons.chevron_right, color: AppColors.outline),
             onTap: () {
               Navigator.pushNamed(context, '/about');
             },
           ),
-          const Divider(height: 1, color: AppColors.surfaceVariant),
+          Divider(height: 1, color: AppColors.surfaceVariant),
           _buildSettingsItem(
             icon: Icons.notifications,
             title: 'Notifikasi',
@@ -317,16 +318,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             onTap: () {},
           ),
-          const Divider(height: 1, color: AppColors.surfaceVariant),
+          Divider(height: 1, color: AppColors.surfaceVariant),
           _buildSettingsItem(
             icon: Icons.dark_mode,
             title: 'Mode Gelap',
             trailing: Switch(
               value: _isDarkModeEnabled,
-              onChanged: (val) {
+              onChanged: (val) async {
                 setState(() {
                   _isDarkModeEnabled = val;
                 });
+                await ThemeController.instance.setDark(val);
               },
               activeColor: AppColors.primary,
             ),
@@ -393,14 +395,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
-              side: const BorderSide(color: AppColors.error, width: 2),
+              side: BorderSide(color: AppColors.error, width: 2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             icon: const Icon(Icons.logout, size: 24),
             label: Text(
-              'LogOut',
+              'Keluar',
               style: AppTextStyles.titleLg.copyWith(color: AppColors.error),
             ),
           ),

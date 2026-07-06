@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
+import '../utils/snackbar_helper.dart';
+import '../widgets/task_list_card.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   const TaskDetailScreen({super.key});
@@ -41,7 +43,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -80,7 +82,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 : AppColors.onSecondaryFixedVariant,
                   ),
                   _buildChip(
-                    label: '${_task.priority} Priority',
+                    label: 'Prioritas ${priorityLabelId(_task.priority)}',
                     backgroundColor: _task.priority == 'High'
                         ? AppColors.errorContainer
                         : _task.priority == 'Medium'
@@ -105,7 +107,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.event, size: 20, color: AppColors.onSurfaceVariant),
+                  Icon(Icons.event, size: 20, color: AppColors.onSurfaceVariant),
                   const SizedBox(width: 8),
                   Text(
                     'Deadline: ${_task.deadline != null ? DateFormat('dd MMM yyyy, HH:mm').format(_task.deadline!) : 'Tanpa tenggat'}',
@@ -117,7 +119,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
               
               const SizedBox(height: 24),
-              const Divider(color: AppColors.outlineVariant, height: 1),
+              Divider(color: AppColors.outlineVariant, height: 1),
               const SizedBox(height: 24),
 
               // Task Description Section
@@ -148,23 +150,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       try {
                         await taskRepository.updateTaskCompletion(_task.id, true);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).clearSnackBars();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Tugas berhasil diselesaikan!'),
-                              duration: const Duration(seconds: 3),
-                              action: SnackBarAction(
-                                label: 'Urungkan',
-                                textColor: AppColors.primaryFixedDim,
-                                onPressed: () async {
-                                  try {
-                                    await taskRepository.updateTaskCompletion(_task.id, false);
-                                  } catch (e) {
-                                    debugPrint('Gagal mengurungkan tugas: $e');
-                                  }
-                                },
-                              ),
-                            ),
+                          showAutoDismissSnackBar(
+                            context,
+                            message: 'Tugas berhasil diselesaikan!',
+                            actionLabel: 'Urungkan',
+                            actionTextColor: AppColors.primaryFixedDim,
+                            onActionPressed: () async {
+                              try {
+                                await taskRepository.updateTaskCompletion(_task.id, false);
+                              } catch (e) {
+                                debugPrint('Gagal mengurungkan tugas: $e');
+                              }
+                            },
                           );
                           Navigator.pop(context);
                         }
@@ -205,8 +202,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       try {
                         await taskRepository.updateTaskCompletion(_task.id, false);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Tugas berhasil diaktifkan kembali ke dashboard!')),
+                          showAutoDismissSnackBar(
+                            context,
+                            message: 'Tugas berhasil diaktifkan kembali ke dashboard!',
+                            actionLabel: 'Urungkan',
+                            onActionPressed: () async {
+                              try {
+                                await taskRepository.updateTaskCompletion(_task.id, true);
+                              } catch (e) {
+                                debugPrint('Gagal mengurungkan tugas: $e');
+                              }
+                            },
                           );
                           Navigator.pop(context);
                         }
@@ -258,7 +264,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.outline),
+                          side: BorderSide(color: AppColors.outline),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -298,11 +304,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         );
 
                         if (confirm == true) {
+                          final deletedTask = _task;
                           try {
-                            await taskRepository.deleteTask(_task.id);
+                            await taskRepository.deleteTask(deletedTask.id);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Tugas berhasil dihapus!')),
+                              showAutoDismissSnackBar(
+                                context,
+                                message: 'Tugas berhasil dihapus!',
+                                duration: const Duration(seconds: 4),
+                                actionLabel: 'Urungkan',
+                                actionTextColor: AppColors.primaryFixedDim,
+                                onActionPressed: () async {
+                                  try {
+                                    await taskRepository.restoreTask(deletedTask);
+                                  } catch (e) {
+                                    debugPrint('Gagal mengurungkan penghapusan tugas: $e');
+                                  }
+                                },
                               );
                               Navigator.pop(context);
                             }
@@ -318,7 +336,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.zero,
                         foregroundColor: AppColors.error,
-                        side: const BorderSide(color: AppColors.errorContainer),
+                        side: BorderSide(color: AppColors.errorContainer),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
