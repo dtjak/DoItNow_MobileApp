@@ -157,6 +157,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 label: 'Urungkan',
                                 textColor: AppColors.primaryFixedDim,
                                 onPressed: () async {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                  }
                                   try {
                                     await taskRepository.updateTaskCompletion(_task.id, false);
                                   } catch (e) {

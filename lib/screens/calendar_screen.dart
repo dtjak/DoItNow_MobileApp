@@ -499,6 +499,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         label: 'Urungkan',
                         textColor: AppColors.primaryFixedDim,
                         onPressed: () async {
+                          scaffoldMessenger.hideCurrentSnackBar();
                           try {
                             await _taskRepository.updateTaskCompletion(task.id, false);
                           } catch (e) {
