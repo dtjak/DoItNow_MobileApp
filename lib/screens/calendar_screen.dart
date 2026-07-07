@@ -102,11 +102,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     // Get days of the selected month that have active tasks
     final daysWithTasks = tasks
-        .where((t) =>
-            t.deadline != null &&
-            t.deadline!.month == _selectedMonth.month &&
-            t.deadline!.year == _selectedMonth.year &&
-            !t.isCompleted)
+        .where(
+          (t) =>
+              t.deadline != null &&
+              t.deadline!.month == _selectedMonth.month &&
+              t.deadline!.year == _selectedMonth.year &&
+              !t.isCompleted,
+        )
         .map((t) => t.deadline!.day)
         .toSet();
 
@@ -121,49 +123,62 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // In our UI, grid starts with Monday (S, S, R, K, J, S, M)
     // Dart weekday: 1 = Monday, 7 = Sunday
     int offset = firstDay.weekday - 1;
-    final prevMonthLastDay =
-        DateTime(_selectedMonth.year, _selectedMonth.month, 0).day;
+    final prevMonthLastDay = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month,
+      0,
+    ).day;
 
     List<Widget> dayWidgets = [];
 
     // Previous month days (faded)
     final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     for (int i = prevMonthLastDay - offset + 1; i <= prevMonthLastDay; i++) {
-      final isSelected = _selectedDate != null &&
+      final isSelected =
+          _selectedDate != null &&
           _selectedDate!.day == i &&
           _selectedDate!.month == prevMonth.month &&
           _selectedDate!.year == prevMonth.year;
-      dayWidgets.add(_buildCalendarDay(
-        i.toString(),
-        isFaded: true,
-        isSelected: isSelected,
-        onTap: () {
-          _onMonthChanged(prevMonth);
-        },
-      ));
+      dayWidgets.add(
+        _buildCalendarDay(
+          i.toString(),
+          isFaded: true,
+          isSelected: isSelected,
+          onTap: () {
+            _onMonthChanged(prevMonth);
+          },
+        ),
+      );
     }
 
     // Current month days
     for (int i = 1; i <= lastDay.day; i++) {
       final isToday = isCurrentMonth && (i == now.day);
       final hasTask = daysWithTasks.contains(i);
-      final dayDateTime = DateTime(_selectedMonth.year, _selectedMonth.month, i);
-      final isSelected = _selectedDate != null &&
+      final dayDateTime = DateTime(
+        _selectedMonth.year,
+        _selectedMonth.month,
+        i,
+      );
+      final isSelected =
+          _selectedDate != null &&
           _selectedDate!.day == i &&
           _selectedDate!.month == _selectedMonth.month &&
           _selectedDate!.year == _selectedMonth.year;
 
-      dayWidgets.add(_buildCalendarDay(
-        i.toString(),
-        isCurrent: isToday,
-        isSelected: isSelected,
-        hasDot: hasTask,
-        onTap: () {
-          setState(() {
-            _selectedDate = dayDateTime;
-          });
-        },
-      ));
+      dayWidgets.add(
+        _buildCalendarDay(
+          i.toString(),
+          isCurrent: isToday,
+          isSelected: isSelected,
+          hasDot: hasTask,
+          onTap: () {
+            setState(() {
+              _selectedDate = dayDateTime;
+            });
+          },
+        ),
+      );
     }
 
     // Next month days to pad to multiples of 7
@@ -174,19 +189,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
       nextMonthDays += 7;
     }
     for (int i = 1; i <= nextMonthDays; i++) {
-      final isSelected = _selectedDate != null &&
+      final isSelected =
+          _selectedDate != null &&
           _selectedDate!.day == i &&
           _selectedDate!.month == nextMonth.month &&
           _selectedDate!.year == nextMonth.year;
 
-      dayWidgets.add(_buildCalendarDay(
-        i.toString(),
-        isFaded: true,
-        isSelected: isSelected,
-        onTap: () {
-          _onMonthChanged(nextMonth);
-        },
-      ));
+      dayWidgets.add(
+        _buildCalendarDay(
+          i.toString(),
+          isFaded: true,
+          isSelected: isSelected,
+          onTap: () {
+            _onMonthChanged(nextMonth);
+          },
+        ),
+      );
     }
 
     return Container(
@@ -197,7 +215,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         border: Border.all(color: AppColors.surfaceContainerHigh),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -234,7 +252,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       color: AppColors.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+                      final newMonth = DateTime(
+                        _selectedMonth.year,
+                        _selectedMonth.month - 1,
+                      );
                       _onMonthChanged(newMonth);
                     },
                   ),
@@ -244,7 +265,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       color: AppColors.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+                      final newMonth = DateTime(
+                        _selectedMonth.year,
+                        _selectedMonth.month + 1,
+                      );
                       _onMonthChanged(newMonth);
                     },
                   ),
@@ -335,7 +359,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               day,
               style: AppTextStyles.bodyMd.copyWith(
                 color: isFaded
-                    ? AppColors.onSurfaceVariant.withOpacity(0.3)
+                    ? AppColors.onSurfaceVariant.withValues(alpha: 0.3)
                     : AppColors.onSurface,
               ),
             ),
@@ -373,7 +397,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             Text(
               'Jadwal Tugas',
-              style: AppTextStyles.headlineSm.copyWith(color: AppColors.onSurface),
+              style: AppTextStyles.headlineSm.copyWith(
+                color: AppColors.onSurface,
+              ),
             ),
             if (formattedDate.isNotEmpty)
               Text(
@@ -393,16 +419,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
             decoration: BoxDecoration(
               color: AppColors.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppColors.surfaceContainerHigh,
-              ),
+              border: Border.all(color: AppColors.surfaceContainerHigh),
             ),
             child: Column(
               children: [
                 Icon(
                   Icons.task_alt,
                   size: 48,
-                  color: AppColors.onSurfaceVariant.withOpacity(0.3),
+                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -420,10 +444,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             children: activeTasks.map((task) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
-                child: TaskListCard(
-                  task: task,
-                  repository: _taskRepository,
-                ),
+                child: TaskListCard(task: task, repository: _taskRepository),
               );
             }).toList(),
           ),
@@ -438,9 +459,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final months = [
-              'Jan', 'Feb', 'Mar', 'Apr',
-              'Mei', 'Jun', 'Jul', 'Agu',
-              'Sep', 'Okt', 'Nov', 'Des'
+              'Jan',
+              'Feb',
+              'Mar',
+              'Apr',
+              'Mei',
+              'Jun',
+              'Jul',
+              'Agu',
+              'Sep',
+              'Okt',
+              'Nov',
+              'Des',
             ];
 
             return AlertDialog(
@@ -455,7 +485,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     icon: Icon(Icons.chevron_left, color: AppColors.primary),
                     onPressed: () {
                       setDialogState(() {
-                        _selectedMonth = DateTime(_selectedMonth.year - 1, _selectedMonth.month);
+                        _selectedMonth = DateTime(
+                          _selectedMonth.year - 1,
+                          _selectedMonth.month,
+                        );
                       });
                     },
                   ),
@@ -470,7 +503,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     icon: Icon(Icons.chevron_right, color: AppColors.primary),
                     onPressed: () {
                       setDialogState(() {
-                        _selectedMonth = DateTime(_selectedMonth.year + 1, _selectedMonth.month);
+                        _selectedMonth = DateTime(
+                          _selectedMonth.year + 1,
+                          _selectedMonth.month,
+                        );
                       });
                     },
                   ),
@@ -493,24 +529,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     final isCurrentMonth = _selectedMonth.month == index + 1;
                     return GestureDetector(
                       onTap: () {
-                        final newMonth = DateTime(_selectedMonth.year, index + 1);
+                        final newMonth = DateTime(
+                          _selectedMonth.year,
+                          index + 1,
+                        );
                         Navigator.pop(context);
                         _onMonthChanged(newMonth);
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isCurrentMonth ? AppColors.primary : Colors.transparent,
+                          color: isCurrentMonth
+                              ? AppColors.primary
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isCurrentMonth ? AppColors.primary : AppColors.outlineVariant,
+                            color: isCurrentMonth
+                                ? AppColors.primary
+                                : AppColors.outlineVariant,
                           ),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           months[index],
                           style: AppTextStyles.labelLg.copyWith(
-                            color: isCurrentMonth ? AppColors.onPrimary : AppColors.onSurface,
-                            fontWeight: isCurrentMonth ? FontWeight.bold : FontWeight.normal,
+                            color: isCurrentMonth
+                                ? AppColors.onPrimary
+                                : AppColors.onSurface,
+                            fontWeight: isCurrentMonth
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ),

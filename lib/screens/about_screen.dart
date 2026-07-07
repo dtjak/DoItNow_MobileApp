@@ -62,7 +62,7 @@ class AboutScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -107,7 +107,7 @@ class AboutScreen extends StatelessWidget {
         _buildFeatureCard(
           icon: Icons.task_alt,
           iconColor: AppColors.primary,
-          iconBgColor: AppColors.primaryContainer.withOpacity(0.1),
+          iconBgColor: AppColors.primaryContainer.withValues(alpha: 0.1),
           title: 'Manajemen Tugas',
           description:
               'Sistem prioritas pintar untuk tugas kuliah harian Anda.',
@@ -116,7 +116,7 @@ class AboutScreen extends StatelessWidget {
         _buildFeatureCard(
           icon: Icons.calendar_month,
           iconColor: AppColors.tertiary,
-          iconBgColor: AppColors.tertiaryContainer.withOpacity(0.1),
+          iconBgColor: AppColors.tertiaryContainer.withValues(alpha: 0.1),
           title: 'Kalender Akademik',
           description: 'Sinkronisasi jadwal ujian dan tenggat waktu praktikum.',
         ),
@@ -124,7 +124,7 @@ class AboutScreen extends StatelessWidget {
         _buildFeatureCard(
           icon: Icons.archive,
           iconColor: AppColors.secondary,
-          iconBgColor: AppColors.secondaryContainer.withOpacity(0.1),
+          iconBgColor: AppColors.secondaryContainer.withValues(alpha: 0.1),
           title: 'Arsip Pintar',
           description:
               'Simpan dan cari kembali materi kuliah yang telah selesai.',
@@ -148,7 +148,7 @@ class AboutScreen extends StatelessWidget {
         border: Border.all(color: AppColors.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -199,7 +199,7 @@ class AboutScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -217,7 +217,7 @@ class AboutScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
           ),
         ),
         padding: const EdgeInsets.all(16),
@@ -307,5 +307,4 @@ class AboutScreen extends StatelessWidget {
       ],
     );
   }
-
 }

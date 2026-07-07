@@ -346,7 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -374,8 +374,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     switch (_sortMode) {
       case 'priority':
         const rank = {'High': 0, 'Medium': 1, 'Low': 2};
-        tasks.sort((a, b) =>
-            (rank[a.priority] ?? 3).compareTo(rank[b.priority] ?? 3));
+        tasks.sort(
+          (a, b) => (rank[a.priority] ?? 3).compareTo(rank[b.priority] ?? 3),
+        );
         break;
       case 'deadline':
         tasks.sort((a, b) {
@@ -402,8 +403,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 'Daftar Tugas',
-                style:
-                    AppTextStyles.titleLg.copyWith(color: AppColors.onSurface),
+                style: AppTextStyles.titleLg.copyWith(
+                  color: AppColors.onSurface,
+                ),
               ),
               PopupMenuButton<String>(
                 initialValue: _sortMode,

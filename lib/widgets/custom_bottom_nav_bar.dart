@@ -5,10 +5,7 @@ import '../theme/theme_controller.dart';
 class CustomBottomNavBar extends StatelessWidget {
   final String currentRoute;
 
-  const CustomBottomNavBar({
-    super.key,
-    required this.currentRoute,
-  });
+  const CustomBottomNavBar({super.key, required this.currentRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +57,7 @@ class CustomBottomNavBar extends StatelessWidget {
                 ),
 
                 // Animating/entering "+" button in the middle when not on Dashboard
-                if (!isDashboard)
-                  _buildCenterAddButton(context),
+                if (!isDashboard) _buildCenterAddButton(context),
 
                 _buildNavItem(
                   context: context,
@@ -119,14 +115,10 @@ class CustomBottomNavBar extends StatelessWidget {
                   color: Colors.black12,
                   blurRadius: 8,
                   offset: Offset(0, 4),
-                )
-              ]
+                ),
+              ],
             ),
-            child: Icon(
-              Icons.add,
-              color: AppColors.onPrimary,
-              size: 28,
-            ),
+            child: Icon(Icons.add, color: AppColors.onPrimary, size: 28),
           ),
         ),
       ),
@@ -150,7 +142,9 @@ class CustomBottomNavBar extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryFixedDim.withOpacity(0.2) : Colors.transparent,
+          color: isActive
+              ? AppColors.primaryFixedDim.withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -160,7 +154,7 @@ class CustomBottomNavBar extends StatelessWidget {
               icon,
               color: isActive
                   ? AppColors.primary
-                  : AppColors.onSurfaceVariant.withOpacity(0.7),
+                  : AppColors.onSurfaceVariant.withValues(alpha: 0.7),
               size: 24,
             ),
             const SizedBox(height: 2),
@@ -169,7 +163,7 @@ class CustomBottomNavBar extends StatelessWidget {
               style: AppTextStyles.labelSm.copyWith(
                 color: isActive
                     ? AppColors.primary
-                    : AppColors.onSurfaceVariant.withOpacity(0.7),
+                    : AppColors.onSurfaceVariant.withValues(alpha: 0.7),
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               ),
             ),

@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.primaryFixedDim.withOpacity(0.2),
+                color: AppColors.primaryFixedDim.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
             ),
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: AppColors.secondaryFixed.withOpacity(0.2),
+                color: AppColors.secondaryFixed.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
             ),
@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
+                                  color: Colors.black.withValues(alpha: 0.08),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -199,9 +199,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: AppColors.onSurface,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'nama@kampus.id',
+                                hintText: 'nama@gmail.com',
                                 hintStyle: AppTextStyles.bodyLg.copyWith(
-                                  color: AppColors.outline.withOpacity(0.5),
+                                  color: AppColors.outline.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 prefixIcon: Icon(
                                   Icons.mail_outline,
@@ -269,7 +271,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: InputDecoration(
                                 hintText: '••••••••',
                                 hintStyle: AppTextStyles.bodyLg.copyWith(
-                                  color: AppColors.outline.withOpacity(0.5),
+                                  color: AppColors.outline.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 prefixIcon: Icon(
                                   Icons.lock_outline,

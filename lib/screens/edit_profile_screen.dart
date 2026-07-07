@@ -70,7 +70,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         final bytes = await image.readAsBytes();
         final base64String = base64Encode(bytes);
         final format = image.name.split('.').last.toLowerCase();
-        final mimeType = (format == 'jpg' || format == 'jpeg') ? 'image/jpeg' : 'image/png';
+        final mimeType = (format == 'jpg' || format == 'jpeg')
+            ? 'image/jpeg'
+            : 'image/png';
         final dataUrl = 'data:$mimeType;base64,$base64String';
         setState(() {
           _photoUrl = dataUrl;
@@ -79,9 +81,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       debugPrint('Error picking image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memilih gambar: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memilih gambar: $e')));
       }
     }
   }
@@ -224,7 +226,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 border: Border.all(color: AppColors.surfaceContainer, width: 4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -245,11 +247,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       ),
                     )
-                  : Icon(
-                      Icons.person,
-                      size: 64,
-                      color: AppColors.outline,
-                    ),
+                  : Icon(Icons.person, size: 64, color: AppColors.outline),
             ),
             Positioned(
               bottom: 0,
@@ -264,17 +262,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.edit,
-                    color: AppColors.onPrimary,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.edit, color: AppColors.onPrimary, size: 20),
                 ),
               ),
             ),
@@ -352,7 +346,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: AppTextStyles.bodyLg.copyWith(
-              color: AppColors.onSurfaceVariant.withOpacity(0.5),
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             filled: true,
             fillColor: AppColors.surfaceContainerLowest,

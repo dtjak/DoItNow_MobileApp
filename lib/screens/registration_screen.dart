@@ -68,10 +68,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       await FirebaseAuth.instance.signOut();
 
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Registrasi berhasil! Silakan masuk dengan akun baru Anda.'),
+          content: Text(
+            'Registrasi berhasil! Silakan masuk dengan akun baru Anda.',
+          ),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -111,7 +113,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: AppColors.primaryFixedDim.withOpacity(0.3),
+                color: AppColors.primaryFixedDim.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
             ),
@@ -123,7 +125,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: AppColors.secondaryFixed.withOpacity(0.3),
+                color: AppColors.secondaryFixed.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
             ),
@@ -140,11 +142,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.task_alt,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
+                      Icon(Icons.task_alt, color: AppColors.primary, size: 24),
                       const SizedBox(width: 8),
                       Text(
                         'DoItNow',
@@ -209,13 +207,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: AppColors.surfaceContainerLowest,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.outlineVariant.withOpacity(
-                                  0.3,
+                                color: AppColors.outlineVariant.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -278,7 +276,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   decoration: InputDecoration(
                                     hintText: 'Min. 8 karakter',
                                     hintStyle: AppTextStyles.bodyMd.copyWith(
-                                      color: AppColors.outline.withOpacity(0.5),
+                                      color: AppColors.outline.withValues(
+                                        alpha: 0.5,
+                                      ),
                                     ),
                                     prefixIcon: Icon(
                                       Icons.lock_outline,
@@ -411,8 +411,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               _isLoading = true;
                                               _errorMessage = null;
                                             });
-                                            final navigator = Navigator.of(context);
-                                            final user = await AuthHelper.signInWithGoogle(context);
+                                            final navigator = Navigator.of(
+                                              context,
+                                            );
+                                            final user =
+                                                await AuthHelper.signInWithGoogle(
+                                                  context,
+                                                );
                                             if (user != null) {
                                               navigator.pushNamedAndRemoveUntil(
                                                 '/dashboard',
@@ -521,7 +526,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppTextStyles.bodyMd.copyWith(
-          color: AppColors.outline.withOpacity(0.5),
+          color: AppColors.outline.withValues(alpha: 0.5),
         ),
         prefixIcon: Icon(icon, color: AppColors.outline, size: 20),
         border: OutlineInputBorder(

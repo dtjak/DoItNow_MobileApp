@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
@@ -34,7 +36,11 @@ class AppScrollBehavior extends MaterialScrollBehavior {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
+  // Use Indonesian month/day names for all DateFormat calls app-wide.
+  await initializeDateFormatting('id_ID', null);
+  Intl.defaultLocale = 'id_ID';
+
   // Initialize and request local notifications permissions
   final notificationService = NotificationService();
   await notificationService.init();

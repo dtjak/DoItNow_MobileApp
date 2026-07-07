@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../widgets/task_list_card.dart';
 import '../utils/snackbar_helper.dart';
 
 class ArchiveScreen extends StatefulWidget {
@@ -184,28 +185,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   }
 
   Widget _buildArchivedTaskCard(TaskModel task) {
-    Color priorityBg;
-    Color priorityColor;
-    String priorityLabel;
-
-    switch (task.priority) {
-      case 'Low':
-        priorityLabel = 'LOW';
-        priorityBg = AppColors.tertiaryFixed;
-        priorityColor = AppColors.onTertiaryFixedVariant;
-        break;
-      case 'Medium':
-        priorityLabel = 'MED';
-        priorityBg = Colors.amber.shade100;
-        priorityColor = Colors.amber.shade900;
-        break;
-      case 'High':
-      default:
-        priorityLabel = 'HIGH';
-        priorityBg = AppColors.errorContainer;
-        priorityColor = AppColors.error;
-        break;
-    }
+    final priorityBg = priorityBgFor(task.priority);
+    final priorityColor = priorityColorFor(task.priority);
+    final priorityLabel = priorityLabelId(task.priority).toUpperCase();
+    final categoryBg = categoryBgFor(task.category);
+    final categoryColor = categoryTextFor(task.category);
 
     final formattedTime = task.deadline != null
         ? DateFormat('dd MMM, HH:mm').format(task.deadline!)
@@ -219,7 +203,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
         border: Border.all(color: AppColors.surfaceVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -246,9 +230,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       } catch (e) {
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text(
-                              'Gagal menyelesaikan kembali: $e',
-                            ),
+                            content: Text('Gagal menyelesaikan kembali: $e'),
                           ),
                         );
                       }
@@ -297,10 +279,21 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      task.category,
-                      style: AppTextStyles.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: categoryBg,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        task.category,
+                        style: AppTextStyles.labelSm.copyWith(
+                          color: categoryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -309,7 +302,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 Text(
                   task.title,
                   style: AppTextStyles.titleLg.copyWith(
-                    color: AppColors.onSurfaceVariant.withOpacity(0.6),
+                    color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
                     decoration: TextDecoration.lineThrough,
                   ),
                   maxLines: 1,
@@ -318,11 +311,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
-                      Icons.schedule,
-                      size: 14,
-                      color: AppColors.outline,
-                    ),
+                    Icon(Icons.schedule, size: 14, color: AppColors.outline),
                     const SizedBox(width: 4),
                     Text(
                       formattedTime,

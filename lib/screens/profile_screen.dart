@@ -134,7 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -188,11 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     }
                   }
-                  return Icon(
-                    Icons.person,
-                    size: 48,
-                    color: AppColors.outline,
-                  );
+                  return Icon(Icons.person, size: 48, color: AppColors.outline);
                 }(),
               ),
               Positioned(
@@ -279,7 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -314,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onChanged: (val) {
                 _setNotificationPreference(val);
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
             onTap: () {},
           ),
@@ -330,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 });
                 await ThemeController.instance.setDark(val);
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
             onTap: () {},
           ),

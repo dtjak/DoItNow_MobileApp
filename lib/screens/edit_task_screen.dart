@@ -220,14 +220,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 color: AppColors.surfaceContainerLowest,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 24,
                     offset: const Offset(0, -8),
                   ),
                 ],
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.outlineVariant.withOpacity(0.1),
+                    color: AppColors.outlineVariant.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -241,7 +241,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 8,
-                  shadowColor: AppColors.primary.withOpacity(0.4),
+                  shadowColor: AppColors.primary.withValues(alpha: 0.4),
                 ),
                 child: _isLoading
                     ? SizedBox(
@@ -367,7 +367,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -406,14 +408,16 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 2,
                       offset: const Offset(0, 1),
                     ),
                   ]
                 : null,
             border: isSelected
-                ? Border.all(color: AppColors.outlineVariant.withOpacity(0.2))
+                ? Border.all(
+                    color: AppColors.outlineVariant.withValues(alpha: 0.2),
+                  )
                 : null,
           ),
           child: Row(
@@ -500,11 +504,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.schedule,
-                    size: 20,
-                    color: AppColors.outline,
-                  ),
+                  Icon(Icons.schedule, size: 20, color: AppColors.outline),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -529,10 +529,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withOpacity(0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.3),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -544,7 +546,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.tertiaryContainer.withOpacity(0.2),
+              color: AppColors.tertiaryContainer.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.push_pin, color: AppColors.tertiary),
@@ -577,7 +579,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 _isPinned = value;
               });
             },
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
           ),
         ],
       ),
