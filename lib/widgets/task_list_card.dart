@@ -5,9 +5,9 @@ import '../models/task_model.dart';
 import '../repositories/task_repository.dart';
 import '../utils/snackbar_helper.dart';
 
-/// Resolves the accent color for a task priority.
-/// Green = Low, Amber = Medium, Red = High. Kept in one place so every
-/// screen shows the exact same color for the same priority.
+/// Menentukan warna aksen untuk prioritas tugas.
+/// Hijau = Rendah, Kuning = Sedang, Merah = Tinggi. Disimpan di satu tempat
+/// agar setiap layar menampilkan warna yang sama persis untuk prioritas yang sama.
 Color priorityColorFor(String priority) {
   switch (priority.toLowerCase()) {
     case 'low':
@@ -34,7 +34,7 @@ Color priorityBgFor(String priority) {
   }
 }
 
-/// Indonesian display label for a stored priority value.
+/// Label tampilan berbahasa Indonesia untuk nilai prioritas yang tersimpan.
 String priorityLabelId(String priority) {
   switch (priority.toLowerCase()) {
     case 'low':
@@ -48,8 +48,8 @@ String priorityLabelId(String priority) {
   }
 }
 
-/// Category chip background/text colors, shared by dashboard, pinned cards,
-/// and the task list so categories look identical everywhere.
+/// Warna latar/teks chip kategori, dipakai bersama oleh dashboard, kartu
+/// yang dipin, dan daftar tugas agar kategori terlihat sama di mana pun.
 Color categoryBgFor(String category) {
   switch (category) {
     case 'Kampus':
@@ -78,11 +78,12 @@ Color categoryTextFor(String category) {
   }
 }
 
-/// A swipeable task card shared by the dashboard and calendar task lists.
+/// Kartu tugas yang bisa di-swipe, dipakai bersama oleh daftar tugas
+/// dashboard dan kalender.
 ///
-/// - Swipe right  → mark completed (moves to archive), with undo.
-/// - Swipe left   → delete task, with undo.
-/// - Tap          → open task detail.
+/// - Swipe kanan  → tandai selesai (pindah ke arsip), dengan opsi urungkan.
+/// - Swipe kiri   → hapus tugas, dengan opsi urungkan.
+/// - Ketuk        → buka detail tugas.
 class TaskListCard extends StatelessWidget {
   final TaskModel task;
   final TaskRepository repository;
@@ -124,11 +125,11 @@ class TaskListCard extends StatelessWidget {
       confirmDismiss: (direction) async {
         final scaffoldMessenger = ScaffoldMessenger.of(context);
         if (direction == DismissDirection.startToEnd) {
-          // Swipe right: complete -> archive.
+          // Swipe kanan: selesaikan -> arsip.
           try {
             await repository.updateTaskCompletion(task.id, true);
-            // Use the pre-captured messenger; the card's own context may
-            // already be deactivated by the time the list rebuilds.
+            // Gunakan messenger yang sudah ditangkap sebelumnya; context milik
+            // kartu itu sendiri mungkin sudah nonaktif saat daftar rebuild.
             showAutoDismissSnackBar(
               null,
               messenger: scaffoldMessenger,
@@ -150,7 +151,7 @@ class TaskListCard extends StatelessWidget {
             return false;
           }
         } else {
-          // Swipe left: delete (with undo).
+          // Swipe kiri: hapus (dengan opsi urungkan).
           try {
             await repository.deleteTask(task.id);
             showAutoDismissSnackBar(

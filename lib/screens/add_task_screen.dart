@@ -9,6 +9,7 @@ import '../widgets/task_list_card.dart';
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk layar ini.
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
@@ -32,6 +33,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     {'name': 'Pribadi', 'icon': Icons.person},
   ];
 
+  /// Membersihkan controller teks judul dan deskripsi.
   @override
   void dispose() {
     _titleController.dispose();
@@ -39,6 +41,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     super.dispose();
   }
 
+  /// Membuka pemilih tanggal dan menyimpan tanggal tenggat yang dipilih.
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -53,6 +56,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
+  /// Membuka pemilih waktu dan menyimpan waktu tenggat yang dipilih.
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -65,6 +69,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
+  /// Memvalidasi form, membangun TaskModel, menyimpannya ke Firestore, lalu menutup layar.
   Future<void> _saveTask() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
@@ -125,6 +130,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     }
   }
 
+  /// Membangun UI layar tambah tugas dengan field form dan footer tombol simpan.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,7 +158,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               left: 16.0,
               right: 16.0,
               top: 24.0,
-              bottom: 120.0, // Space for footer button
+              bottom: 120.0, // Ruang untuk tombol footer
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +200,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
           ),
 
-          // Footer Action Button
+          // Tombol Aksi Footer
           Positioned(
             bottom: 0,
             left: 0,
@@ -253,6 +259,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun label judul bagian berukuran kecil.
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -263,6 +270,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun field form teks bergaya dengan controller dan teks placeholder yang diberikan.
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -299,6 +307,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun baris chip filter kategori.
   Widget _buildCategoryChips() {
     return Wrap(
       spacing: 8,
@@ -346,6 +355,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun kontrol tersegmentasi untuk memilih prioritas tugas.
   Widget _buildPrioritySegmentedControl() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -370,6 +380,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun satu segmen opsi prioritas yang dapat dipilih.
   Widget _buildPriorityOption(
     String label,
     Color textColor,
@@ -431,6 +442,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun baris kontrol pemilih tanggal dan waktu untuk tenggat tugas.
   Widget _buildDeadlinePickers() {
     final dateStr = _selectedDate != null
         ? DateFormat('dd MMM yyyy').format(_selectedDate!)
@@ -508,6 +520,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     );
   }
 
+  /// Membangun bagian toggle sematkan-tugas dengan kontrol switch-nya.
   Widget _buildPinTaskSection() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

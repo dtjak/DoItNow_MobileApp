@@ -9,39 +9,41 @@ class AuthHelper {
         '335206650251-uinrks2t4sro374vdqur4op1tg7r2a9b.apps.googleusercontent.com',
   );
 
+  /// Menjalankan alur Google Sign-In, menukarnya dengan kredensial Firebase,
+  /// dan membuat dokumen profil Firestore pengguna saat login pertama kali.
   static Future<User?> signInWithGoogle(BuildContext context) async {
     try {
-      // Trigger the authentication flow
+      // Memicu alur autentikasi
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // The user canceled the sign-in flow
+        // Pengguna membatalkan alur sign-in
         return null;
       }
 
-      // Obtain the auth details from the request
+      // Mengambil detail autentikasi dari permintaan
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Create a new credential
+      // Membuat kredensial baru
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Once signed in, return the UserCredential
+      // Setelah berhasil masuk, kembalikan UserCredential
       final UserCredential userCredential = await FirebaseAuth.instance
           .signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Check if the user already exists in Firestore
+        // Periksa apakah pengguna sudah ada di Firestore
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
         if (!userDoc.exists) {
-          // If user does not exist, create profile in Firestore
+          // Jika pengguna belum ada, buat profil di Firestore
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -70,6 +72,7 @@ class AuthHelper {
     }
   }
 
+  /// Mengeluarkan pengguna dari Firebase Auth dan Google Sign-In.
   static Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();

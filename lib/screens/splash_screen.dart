@@ -5,15 +5,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk widget layar splash.
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // Staggered entrance animation (logo -> name -> tagline).
+  // Animasi masuk bertahap (logo -> nama -> tagline).
   late final AnimationController _intro;
-  // Continuous loop for the background glow and loading dots.
+  // Loop berkelanjutan untuk efek cahaya latar dan titik loading.
   late final AnimationController _loop;
 
   bool _navigated = false;
@@ -21,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   static const Color _bgTop = Color(0xFF2563EB);
   static const Color _bgBottom = Color(0xFF002E86);
 
+  /// Menyiapkan controller animasi intro dan loop lalu menjadwalkan navigasi.
   @override
   void initState() {
     super.initState();
@@ -36,13 +38,15 @@ class _SplashScreenState extends State<SplashScreen>
     _scheduleNavigate();
   }
 
+  /// Menunggu durasi splash selesai lalu memicu navigasi.
   Future<void> _scheduleNavigate() async {
-    // Long enough for the entrance animation to play and the branding to be
-    // seen. Users can tap to skip early.
+    // Cukup lama agar animasi masuk selesai diputar dan branding
+    // terlihat. Pengguna bisa mengetuk untuk melewati lebih awal.
     await Future.delayed(const Duration(milliseconds: 4200));
     _navigate();
   }
 
+  /// Menavigasi ke dashboard jika pengguna sudah masuk, jika tidak ke layar masuk.
   void _navigate() {
     if (_navigated || !mounted) return;
     _navigated = true;
@@ -53,6 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membuang kedua controller animasi untuk membebaskan resource.
   @override
   void dispose() {
     _intro.dispose();
@@ -60,6 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  /// Menghitung nilai progres yang dihaluskan untuk sub-interval animasi intro.
   double _interval(double begin, double end, {Curve curve = Curves.easeOut}) {
     return CurvedAnimation(
       parent: _intro,
@@ -67,12 +73,13 @@ class _SplashScreenState extends State<SplashScreen>
     ).value;
   }
 
+  /// Membangun tata letak layar splash dengan latar belakang, logo, dan titik loading.
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      // Tap anywhere to skip straight into the app.
+      // Ketuk di mana saja untuk langsung masuk ke aplikasi.
       body: GestureDetector(
         onTap: _navigate,
         child: Container(
@@ -87,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
           child: Stack(
             children: [
-              // Animated decorative blobs.
+              // Bulatan dekoratif beranimasi.
               AnimatedBuilder(
                 animation: _loop,
                 builder: (context, _) {
@@ -121,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
                 },
               ),
 
-              // Foreground content.
+              // Konten latar depan.
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -135,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
 
-              // Bottom loading dots + footer.
+              // Titik loading bawah + footer.
               Positioned(
                 left: 0,
                 right: 0,
@@ -166,6 +173,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membangun satu lingkaran translusen dekoratif pada posisi yang diberikan.
   Widget _blob({
     required double left,
     required double top,
@@ -186,6 +194,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membangun ikon logo aplikasi yang berdenyut beranimasi.
   Widget _buildLogo() {
     return AnimatedBuilder(
       animation: Listenable.merge([_intro, _loop]),
@@ -193,7 +202,7 @@ class _SplashScreenState extends State<SplashScreen>
         final appear = Curves.elasticOut.transform(
           Interval(0.0, 0.6).transform(_intro.value),
         );
-        // Gentle pulsing halo.
+        // Halo berdenyut lembut.
         final pulse = 0.5 + 0.5 * math.sin(_loop.value * 2 * math.pi);
         return Transform.scale(
           scale: appear.clamp(0.0, 1.2),
@@ -243,6 +252,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membangun teks nama aplikasi yang muncul dengan efek fade-in.
   Widget _buildAppName() {
     final v = _interval(0.35, 0.75);
     return Opacity(
@@ -262,6 +272,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membangun teks tagline yang muncul dengan efek fade-in di bawah nama aplikasi.
   Widget _buildTagline() {
     final v = _interval(0.5, 0.9);
     return Opacity(
@@ -281,6 +292,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  /// Membangun baris titik loading yang bergerak naik-turun beranimasi.
   Widget _buildLoadingDots() {
     return AnimatedBuilder(
       animation: _loop,
@@ -288,7 +300,7 @@ class _SplashScreenState extends State<SplashScreen>
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(3, (i) {
-            // Each dot bobs with a phase offset.
+            // Setiap titik bergerak naik-turun dengan selisih fase.
             final phase = (_loop.value + i * 0.2) % 1.0;
             final lift = math.sin(phase * 2 * math.pi).clamp(0.0, 1.0);
             return Container(

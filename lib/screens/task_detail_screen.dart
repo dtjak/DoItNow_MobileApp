@@ -17,6 +17,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   late TaskModel _task;
   bool _isInitialized = false;
 
+  /// Mengambil tugas yang dikirim lewat argumen rute pada perubahan dependensi pertama.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -26,6 +27,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  /// Membangun layar detail tugas yang menampilkan header, deskripsi, dan tombol aksi.
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
@@ -59,7 +61,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Task Header Section
+              // Bagian Header Tugas
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -122,7 +124,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               Divider(color: AppColors.outlineVariant, height: 1),
               const SizedBox(height: 24),
 
-              // Task Description Section
+              // Bagian Deskripsi Tugas
               Text(
                 'Deskripsi Tugas',
                 style: AppTextStyles.labelLg.copyWith(color: AppColors.outline),
@@ -140,7 +142,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
               const SizedBox(height: 48),
 
-              // Action Buttons
+              // Tombol Aksi
               if (!_task.isCompleted) ...[
                 SizedBox(
                   width: double.infinity,
@@ -353,6 +355,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
+  /// Membangun chip label kecil membulat yang digunakan untuk tag kategori dan prioritas.
   Widget _buildChip({
     required String label,
     required Color backgroundColor,

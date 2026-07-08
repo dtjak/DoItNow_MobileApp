@@ -15,6 +15,8 @@ class NotificationService {
 
   bool _isInitialized = false;
 
+  /// Menyiapkan plugin notifikasi lokal dan data zona waktu. Aman dipanggil
+  /// berkali-kali — hanya berjalan sekali.
   Future<void> init() async {
     if (kIsWeb) return;
     if (_isInitialized) return;
@@ -46,6 +48,7 @@ class NotificationService {
     _isInitialized = true;
   }
 
+  /// Meminta izin notifikasi ke sistem operasi di Android dan iOS.
   Future<void> requestPermissions() async {
     if (kIsWeb) return;
     await init();
@@ -69,11 +72,14 @@ class NotificationService {
     }
   }
 
+  /// Membaca preferensi aktif/nonaktif notifikasi pengguna dari penyimpanan lokal.
   Future<bool> _isNotificationEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('notifications_enabled') ?? true;
   }
 
+  /// Menjadwalkan pengingat untuk tenggat tugas (1 jam sebelumnya, atau
+  /// segera jika tenggat sudah kurang dari 1 jam lagi).
   Future<void> scheduleTaskNotification(TaskModel task) async {
     if (kIsWeb) return;
     await init();
@@ -83,7 +89,7 @@ class NotificationService {
 
     final int notificationId = task.id.hashCode;
 
-    // Cancel any previous notification for this task
+    // Batalkan notifikasi sebelumnya untuk tugas ini
     await cancelNotification(task.id);
 
     final DateTime scheduleTime = task.deadline!.subtract(const Duration(hours: 1));
@@ -109,6 +115,8 @@ class NotificationService {
     );
   }
 
+  /// Helper tingkat rendah yang benar-benar mendaftarkan notifikasi ke sistem
+  /// operasi pada [scheduledDate] yang ditentukan.
   Future<void> _schedule({
     required int id,
     required String title,
@@ -154,6 +162,7 @@ class NotificationService {
     }
   }
 
+  /// Membatalkan pengingat yang tertunda untuk satu tugas (misalnya saat dihapus/diselesaikan).
   Future<void> cancelNotification(String taskId) async {
     if (kIsWeb) return;
     await init();
@@ -162,6 +171,7 @@ class NotificationService {
     debugPrint('Cancelled notification $notificationId');
   }
 
+  /// Membatalkan semua notifikasi yang tertunda (misalnya saat logout).
   Future<void> cancelAllNotifications() async {
     if (kIsWeb) return;
     await init();

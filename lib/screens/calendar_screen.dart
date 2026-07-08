@@ -10,6 +10,7 @@ import '../widgets/task_list_card.dart';
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk widget layar kalender ini.
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
@@ -19,10 +20,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDate = DateTime.now();
   final TaskRepository _taskRepository = TaskRepository();
 
+  /// Memperbarui bulan yang dipilih dan mengatur ulang tanggal terpilih sesuai itu.
   void _onMonthChanged(DateTime newMonth) {
     setState(() {
       _selectedMonth = newMonth;
-      // Reset selected date to today if same month, else 1st of month
+      // Atur ulang tanggal terpilih ke hari ini jika bulan sama, jika tidak ke tanggal 1
       final today = DateTime.now();
       if (today.month == newMonth.month && today.year == newMonth.year) {
         _selectedDate = today;
@@ -32,6 +34,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
+  /// Membangun scaffold layar kalender dengan bagian kalender dan jadwal tugas.
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -67,7 +70,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final tasks = snapshot.data ?? [];
           final activeTasks = tasks.where((t) => !t.isCompleted).toList();
 
-          // Filter active tasks for the selected date
+          // Filter tugas aktif untuk tanggal yang dipilih
           final activeTasksForSelectedDate = activeTasks.where((t) {
             if (t.deadline == null || _selectedDate == null) return false;
             return t.deadline!.day == _selectedDate!.day &&
@@ -97,10 +100,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  /// Membangun kartu kalender yang menampilkan grid bulan dengan indikator tugas.
   Widget _buildCalendarSection(List<TaskModel> tasks) {
     final monthYearStr = DateFormat('MMMM yyyy').format(_selectedMonth);
 
-    // Get days of the selected month that have active tasks
+    // Ambil hari-hari pada bulan terpilih yang memiliki tugas aktif
     final daysWithTasks = tasks
         .where(
           (t) =>
@@ -116,12 +120,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final isCurrentMonth =
         now.month == _selectedMonth.month && now.year == _selectedMonth.year;
 
-    // Calculate days for grid
+    // Hitung hari-hari untuk grid
     final firstDay = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
     final lastDay = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
 
-    // In our UI, grid starts with Monday (S, S, R, K, J, S, M)
-    // Dart weekday: 1 = Monday, 7 = Sunday
+    // Pada UI kita, grid dimulai dengan Senin (S, S, R, K, J, S, M)
+    // Weekday Dart: 1 = Senin, 7 = Minggu
     int offset = firstDay.weekday - 1;
     final prevMonthLastDay = DateTime(
       _selectedMonth.year,
@@ -131,7 +135,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     List<Widget> dayWidgets = [];
 
-    // Previous month days (faded)
+    // Hari-hari bulan sebelumnya (memudar)
     final prevMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
     for (int i = prevMonthLastDay - offset + 1; i <= prevMonthLastDay; i++) {
       final isSelected =
@@ -151,7 +155,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
     }
 
-    // Current month days
+    // Hari-hari bulan saat ini
     for (int i = 1; i <= lastDay.day; i++) {
       final isToday = isCurrentMonth && (i == now.day);
       final hasTask = daysWithTasks.contains(i);
@@ -181,7 +185,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
     }
 
-    // Next month days to pad to multiples of 7
+    // Hari-hari bulan berikutnya untuk mengisi hingga kelipatan 7
     final nextMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
     int totalCells = dayWidgets.length;
     int nextMonthDays = (7 - (totalCells % 7)) % 7;
@@ -277,7 +281,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          // Day labels
+          // Label hari
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['S', 'S', 'R', 'K', 'J', 'S', 'M'].map((day) {
@@ -306,6 +310,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  /// Membangun satu sel hari dalam grid kalender dengan gaya seleksi/tugas.
   Widget _buildCalendarDay(
     String day, {
     bool isFaded = false,
@@ -380,6 +385,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  /// Membangun daftar tugas aktif yang dijadwalkan untuk tanggal yang dipilih.
   Widget _buildTaskScheduleSection(
     BuildContext context,
     List<TaskModel> activeTasks,
@@ -452,6 +458,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  /// Menampilkan dialog yang memungkinkan pengguna memilih bulan dan tahun untuk dilompati.
   void _showMonthYearPicker(BuildContext context) {
     showDialog(
       context: context,

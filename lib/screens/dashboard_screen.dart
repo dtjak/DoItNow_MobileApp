@@ -11,6 +11,7 @@ import '../widgets/task_list_card.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk widget layar dashboard ini.
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -25,10 +26,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Pribadi',
   ];
   final TaskRepository _taskRepository = TaskRepository();
-  // Sorting for the "Daftar Tugas" list: null = default (newest), or by
-  // priority / deadline.
+  // Pengurutan untuk daftar "Daftar Tugas": null = bawaan (terbaru), atau
+  // berdasarkan prioritas / tenggat.
   String _sortMode = 'default';
 
+  /// Membangun scaffold utama dashboard dengan app bar, daftar tugas, dan FAB.
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -53,14 +55,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   final allTasks = snapshot.data ?? [];
 
-                  // Filter by selected category locally
+                  // Filter berdasarkan kategori terpilih secara lokal
                   final filteredTasks = _selectedCategory == 'Semua'
                       ? allTasks
                       : allTasks
                             .where((task) => task.category == _selectedCategory)
                             .toList();
 
-                  // Separate active pinned vs active general tasks
+                  // Pisahkan tugas tersemat aktif dari tugas umum aktif
                   final pinnedTasks = filteredTasks
                       .where((task) => task.isPinned && !task.isCompleted)
                       .toList();
@@ -96,8 +98,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         createRectTween: (begin, end) =>
             MaterialRectArcTween(begin: begin, end: end),
         child: FloatingActionButton(
-          // heroTag null so the FAB doesn't create its own Hero; the wrapping
-          // Hero above controls the (arc) flight between screens.
+          // heroTag null agar FAB tidak membuat Hero-nya sendiri; Hero
+          // pembungkus di atas yang mengontrol perpindahan (arc) antar layar.
           heroTag: null,
           onPressed: () {
             Navigator.pushNamed(context, '/add_task');
@@ -114,6 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Membangun app bar atas yang menampilkan logo aplikasi, nama, dan avatar pengguna.
   Widget _buildTopAppBar() {
     final user = FirebaseAuth.instance.currentUser;
     return Container(
@@ -197,6 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Membangun bagian tugas tersemat/penting yang dapat digulir secara horizontal.
   Widget _buildPinnedTasksSection(List<TaskModel> pinnedTasks) {
     if (pinnedTasks.isEmpty) {
       return const SizedBox.shrink();
@@ -221,8 +225,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        // Horizontally scrollable row of compact pinned cards. Swipe/drag
-        // sideways to see the rest.
+        // Baris kartu tersemat kompak yang dapat digulir secara horizontal.
+        // Geser/seret ke samping untuk melihat sisanya.
         SizedBox(
           height: 104,
           child: ListView.separated(
@@ -242,6 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Membangun satu kartu kompak untuk tugas yang disematkan.
   Widget _buildSmallPinnedTaskCard({required TaskModel task}) {
     final labelBgColor = categoryBgFor(task.category);
     final labelTextColor = categoryTextFor(task.category);
@@ -318,6 +323,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// Membangun baris horizontal chip filter kategori yang dapat dipilih.
   Widget _buildCategoryFilter() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -369,7 +375,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Sorts the task list in-place according to [_sortMode].
+  // Mengurutkan daftar tugas secara langsung (in-place) sesuai [_sortMode].
   void _applySort(List<TaskModel> tasks) {
     switch (_sortMode) {
       case 'priority':
@@ -380,7 +386,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         break;
       case 'deadline':
         tasks.sort((a, b) {
-          // Tasks without a deadline go to the end.
+          // Tugas tanpa tenggat diletakkan di akhir.
           if (a.deadline == null && b.deadline == null) return 0;
           if (a.deadline == null) return 1;
           if (b.deadline == null) return -1;
@@ -392,6 +398,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  /// Membangun bagian "Daftar Tugas" dengan menu urutkan dan daftar tugas.
   Widget _buildTaskListSection(List<TaskModel> generalTasks) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

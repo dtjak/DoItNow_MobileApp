@@ -8,6 +8,7 @@ import '../widgets/task_list_card.dart';
 class EditTaskScreen extends StatefulWidget {
   const EditTaskScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk widget stateful ini.
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
@@ -34,6 +35,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     {'name': 'Pribadi', 'icon': Icons.person},
   ];
 
+  /// Memuat tugas yang dikirim lewat argumen rute dan menginisialisasi field form sekali saja.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -52,6 +54,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
+  /// Membuang text controller untuk membebaskan resource saat layar ditutup.
   @override
   void dispose() {
     _titleController.dispose();
@@ -59,6 +62,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     super.dispose();
   }
 
+  /// Membuka pemilih tanggal dan memperbarui tanggal tenggat yang dipilih.
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -73,6 +77,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
+  /// Membuka pemilih waktu dan memperbarui waktu tenggat yang dipilih.
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
@@ -85,6 +90,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
+  /// Memvalidasi form, membuat TaskModel yang telah diperbarui, menyimpannya ke repository, lalu menutup layar.
   Future<void> _saveTask() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
@@ -137,6 +143,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
+  /// Membangun UI layar edit tugas termasuk field form dan tombol simpan.
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
@@ -268,6 +275,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun label bagian kecil yang digunakan di atas tiap kelompok field form.
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -278,6 +286,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun field form teks bergaya dengan controller dan teks hint yang diberikan.
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -314,6 +323,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun baris chip filter kategori yang dapat dipilih.
   Widget _buildCategoryChips() {
     return Wrap(
       spacing: 8,
@@ -361,6 +371,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun kontrol tersegmentasi untuk memilih prioritas tugas (Rendah/Sedang/Tinggi).
   Widget _buildPrioritySegmentedControl() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -385,6 +396,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun satu segmen opsi prioritas yang dapat dipilih dalam kontrol prioritas.
   Widget _buildPriorityOption(
     String label,
     Color textColor,
@@ -446,6 +458,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun baris pemilih tanggal dan waktu untuk mengatur tenggat tugas.
   Widget _buildDeadlinePickers() {
     final dateStr = _selectedDate != null
         ? DateFormat('dd MMM yyyy').format(_selectedDate!)
@@ -523,6 +536,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
+  /// Membangun bagian toggle yang memungkinkan pengguna menyematkan tugas ke atas daftar.
   Widget _buildPinTaskSection() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

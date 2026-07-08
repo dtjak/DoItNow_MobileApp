@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Global, app-wide dark/light mode state.
+/// Status mode gelap/terang untuk seluruh aplikasi.
 ///
-/// [AppColors] resolves its values against [isDark], and [MyApp] listens to
-/// this notifier to rebuild the whole widget tree when the mode changes, so
-/// every screen repaints with the correct palette.
+/// [AppColors] mengambil nilainya berdasarkan [isDark], dan [MyApp]
+/// mendengarkan notifier ini untuk membangun ulang seluruh widget tree saat
+/// mode berubah, sehingga setiap layar digambar ulang dengan palet yang benar.
 class ThemeController extends ValueNotifier<bool> {
   ThemeController._() : super(false);
 
@@ -15,13 +15,13 @@ class ThemeController extends ValueNotifier<bool> {
 
   bool get isDark => value;
 
-  /// Load the persisted preference. Call once during app startup.
+  /// Memuat preferensi yang tersimpan. Panggil sekali saat aplikasi mulai.
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     value = prefs.getBool(_prefsKey) ?? false;
   }
 
-  /// Toggle/set dark mode and persist the choice.
+  /// Mengaktifkan/menonaktifkan mode gelap dan menyimpan pilihannya.
   Future<void> setDark(bool enabled) async {
     value = enabled;
     final prefs = await SharedPreferences.getInstance();

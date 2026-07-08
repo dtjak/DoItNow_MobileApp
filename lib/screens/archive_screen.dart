@@ -26,6 +26,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   ];
   final TaskRepository _taskRepository = TaskRepository();
 
+  /// Membangun layar arsip yang menampilkan tugas selesai yang difilter berdasarkan kategori.
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -62,12 +63,12 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
 
                 final allTasks = snapshot.data ?? [];
 
-                // Filter only completed tasks
+                // Filter hanya tugas yang sudah selesai
                 var completedTasks = allTasks
                     .where((t) => t.isCompleted)
                     .toList();
 
-                // Apply selected category filter
+                // Terapkan filter kategori yang dipilih
                 if (_selectedFilter != 'Semua') {
                   completedTasks = completedTasks
                       .where((t) => t.category == _selectedFilter)
@@ -142,6 +143,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     );
   }
 
+  /// Membangun baris chip filter kategori yang dapat digulir secara horizontal.
   Widget _buildFilterRow() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -184,6 +186,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     );
   }
 
+  /// Membangun satu kartu tugas terarsip (selesai) dengan aksi pulihkan dan detail.
   Widget _buildArchivedTaskCard(TaskModel task) {
     final priorityBg = priorityBgFor(task.priority);
     final priorityColor = priorityColorFor(task.priority);

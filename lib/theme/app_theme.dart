@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import 'theme_controller.dart';
 
-/// App palette. Every member is resolved at read-time against
-/// [ThemeController.instance.isDark], so simply toggling the controller and
-/// rebuilding the tree repaints the whole app in the other mode.
+/// Palet warna aplikasi. Setiap anggota diambil saat dibaca berdasarkan
+/// [ThemeController.instance.isDark], jadi cukup mengubah controller dan
+/// membangun ulang tree untuk mewarnai ulang seluruh aplikasi ke mode lain.
 ///
-/// Because these are getters (not `const`), they cannot be used inside `const`
-/// widget constructors — always use non-const widgets where an AppColors value
-/// is passed.
+/// Karena ini semua adalah getter (bukan `const`), tidak bisa dipakai di
+/// dalam constructor widget `const` — selalu gunakan widget non-const di
+/// tempat yang memakai nilai AppColors.
 class AppColors {
   static bool get _d => ThemeController.instance.isDark;
   static Color _p(Color light, Color dark) => _d ? dark : light;
 
-  // Primary
+  // Primer
   static Color get primary => _p(const Color(0xFF004AC6), const Color(0xFFADC6FF));
   static Color get onPrimary => _p(const Color(0xFFFFFFFF), const Color(0xFF002E69));
   static Color get primaryContainer => _p(const Color(0xFF2563EB), const Color(0xFF244999));
   static Color get onPrimaryContainer => _p(const Color(0xFFEEEFFF), const Color(0xFFDBE1FF));
-  // "Fixed" accent tones (chip backgrounds with dark text) stay the same in both modes.
+  // Warna aksen "Fixed" (background chip dengan teks gelap) tetap sama di kedua mode.
   static const Color primaryFixed = Color(0xFFDBE1FF);
   static const Color primaryFixedDim = Color(0xFFB4C5FF);
   static const Color onPrimaryFixed = Color(0xFF00174B);
   static const Color onPrimaryFixedVariant = Color(0xFF003EA8);
 
-  // Secondary
+  // Sekunder
   static Color get secondary => _p(const Color(0xFF4B41E1), const Color(0xFFC3C0FF));
   static Color get onSecondary => _p(const Color(0xFFFFFFFF), const Color(0xFF1C1099));
   static Color get secondaryContainer => _p(const Color(0xFF645EFB), const Color(0xFF3323CC));
@@ -33,7 +33,7 @@ class AppColors {
   static const Color onSecondaryFixed = Color(0xFF0F0069);
   static const Color onSecondaryFixedVariant = Color(0xFF3323CC);
 
-  // Tertiary
+  // Tersier
   static Color get tertiary => _p(const Color(0xFF006242), const Color(0xFF4EDEA3));
   static Color get onTertiary => _p(const Color(0xFFFFFFFF), const Color(0xFF00391F));
   static Color get tertiaryContainer => _p(const Color(0xFF007D55), const Color(0xFF005236));
@@ -43,7 +43,7 @@ class AppColors {
   static const Color onTertiaryFixed = Color(0xFF002113);
   static const Color onTertiaryFixedVariant = Color(0xFF005236);
 
-  // Surface
+  // Permukaan (Surface)
   static Color get surface => _p(const Color(0xFFF8F9FA), const Color(0xFF121417));
   static Color get surfaceBright => _p(const Color(0xFFF8F9FA), const Color(0xFF383A3D));
   static Color get surfaceDim => _p(const Color(0xFFD9DADB), const Color(0xFF121417));
@@ -55,22 +55,22 @@ class AppColors {
   static Color get surfaceContainerHigh => _p(const Color(0xFFE7E8E9), const Color(0xFF2A2D31));
   static Color get surfaceContainerHighest => _p(const Color(0xFFE1E3E4), const Color(0xFF33363A));
 
-  // Background
+  // Latar belakang
   static Color get background => _p(const Color(0xFFF8F9FA), const Color(0xFF121417));
   static Color get onBackground => _p(const Color(0xFF191C1D), const Color(0xFFE3E4E6));
 
-  // On Surface
+  // Warna di atas Surface
   static Color get onSurface => _p(const Color(0xFF191C1D), const Color(0xFFE3E4E6));
   static Color get onSurfaceVariant => _p(const Color(0xFF434655), const Color(0xFFC3C6CF));
   static Color get inverseSurface => _p(const Color(0xFF2E3132), const Color(0xFFE3E4E6));
   static Color get inverseOnSurface => _p(const Color(0xFFF0F1F2), const Color(0xFF2E3132));
   static Color get inversePrimary => _p(const Color(0xFFB4C5FF), const Color(0xFF004AC6));
 
-  // Outline
+  // Garis luar (Outline)
   static Color get outline => _p(const Color(0xFF737686), const Color(0xFF8C8F99));
   static Color get outlineVariant => _p(const Color(0xFFC3C6D7), const Color(0xFF44474F));
 
-  // Error
+  // Error (warna kesalahan)
   static Color get error => _p(const Color(0xFFBA1A1A), const Color(0xFFFFB4AB));
   static Color get onError => _p(const Color(0xFFFFFFFF), const Color(0xFF690005));
   static Color get errorContainer => _p(const Color(0xFFFFDAD6), const Color(0xFF93000A));
@@ -149,8 +149,8 @@ class AppTextStyles {
 }
 
 class AppTheme {
-  /// Resolves against the current [ThemeController] mode. Rebuild the
-  /// MaterialApp when the controller changes to pick up the new theme.
+  /// Diambil berdasarkan mode [ThemeController] saat ini. Bangun ulang
+  /// MaterialApp saat controller berubah agar tema baru diterapkan.
   static ThemeData get theme {
     final brightness =
         ThemeController.instance.isDark ? Brightness.dark : Brightness.light;
@@ -189,6 +189,6 @@ class AppTheme {
     );
   }
 
-  /// Backwards-compatible alias.
+  /// Alias untuk kompatibilitas dengan kode lama.
   static ThemeData get lightTheme => theme;
 }

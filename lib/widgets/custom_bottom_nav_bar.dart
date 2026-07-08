@@ -9,15 +9,17 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to the theme controller directly so the footer repaints the
-    // instant dark mode is toggled, even though this widget may be `const`
-    // and otherwise skipped when its ancestor rebuilds.
+    // Dengarkan theme controller secara langsung agar footer langsung
+    // digambar ulang saat mode gelap diaktifkan, meskipun widget ini bisa
+    // saja `const` dan biasanya dilewati saat ancestor-nya rebuild.
     return AnimatedBuilder(
       animation: ThemeController.instance,
       builder: (context, _) => _buildBar(context),
     );
   }
 
+  /// Menata 4 item navigasi, ditambah tombol "+" mengambang saat tidak
+  /// berada di tab Dashboard.
   Widget _buildBar(BuildContext context) {
     final isDashboard = currentRoute == '/dashboard';
 
@@ -56,7 +58,7 @@ class CustomBottomNavBar extends StatelessWidget {
                   isActive: currentRoute == '/calendar',
                 ),
 
-                // Animating/entering "+" button in the middle when not on Dashboard
+                // Tombol "+" yang muncul dengan animasi di tengah saat tidak di Dashboard
                 if (!isDashboard) _buildCenterAddButton(context),
 
                 _buildNavItem(
@@ -81,11 +83,13 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
+  /// Tombol "+" berbentuk lingkaran yang menuju ke Add Task, dengan animasi
+  /// Hero agar meluncur dari FAB milik Dashboard.
   Widget _buildCenterAddButton(BuildContext context) {
     return Hero(
       tag: 'add_button',
-      // Arc motion + curved timing makes the button glide between the
-      // dashboard FAB (bottom-right) and the centre of the nav bar.
+      // Gerakan melengkung + timing curved membuat tombol meluncur antara
+      // FAB dashboard (kanan bawah) dan tengah nav bar.
       createRectTween: (begin, end) =>
           MaterialRectArcTween(begin: begin, end: end),
       flightShuttleBuilder: (context, animation, direction, fromCtx, toCtx) {
@@ -125,6 +129,8 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
+  /// Satu ikon+label navigasi yang bisa disentuh; menuju ke [targetRoute]
+  /// kecuali tab tersebut sudah aktif.
   Widget _buildNavItem({
     required BuildContext context,
     required IconData icon,

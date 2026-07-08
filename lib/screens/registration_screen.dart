@@ -19,6 +19,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  /// Membuang text controller untuk membebaskan resource.
   @override
   void dispose() {
     _nameController.dispose();
@@ -27,6 +28,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     super.dispose();
   }
 
+  /// Memvalidasi input, membuat pengguna Firebase baru, menyimpan profil ke Firestore, lalu kembali ke layar masuk.
   Future<void> _register() async {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty ||
@@ -52,7 +54,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             password: _passwordController.text.trim(),
           );
 
-      // Save user profile to Firestore
+      // Simpan profil pengguna ke Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(credential.user!.uid)
@@ -64,7 +66,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             'created_at': FieldValue.serverTimestamp(),
           });
 
-      // Sign out since createUserWithEmailAndPassword automatically signs the user in
+      // Keluarkan pengguna karena createUserWithEmailAndPassword otomatis memasukkan pengguna
       await FirebaseAuth.instance.signOut();
 
       if (!mounted) return;
@@ -99,13 +101,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  /// Membangun UI layar daftar termasuk field form, tombol daftar, dan opsi daftar dengan Google.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Decorative blobs
+          // Bulatan dekoratif
           Positioned(
             bottom: 0,
             left: 0,
@@ -130,11 +133,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
             ),
           ),
-          // Main Content
+          // Konten Utama
           SafeArea(
             child: Column(
               children: [
-                // Header Bar
+                // Bar Header
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -162,7 +165,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       child: Column(
                         children: [
                           const SizedBox(height: 8),
-                          // Header Section
+                          // Bagian Header
                           Column(
                             children: [
                               Container(
@@ -199,7 +202,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                           const SizedBox(height: 32),
 
-                          // Form Card
+                          // Kartu Form
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(24),
@@ -222,7 +225,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Error Message
+                                // Pesan Error
                                 if (_errorMessage != null) ...[
                                   Container(
                                     width: double.infinity,
@@ -241,7 +244,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   const SizedBox(height: 16),
                                 ],
 
-                                // Name Field
+                                // Field Nama
                                 _buildLabel('Nama Lengkap'),
                                 const SizedBox(height: 4),
                                 _buildTextField(
@@ -252,7 +255,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                                 const SizedBox(height: 16),
 
-                                // Email Field
+                                // Field Email
                                 _buildLabel('Email'),
                                 const SizedBox(height: 4),
                                 _buildTextField(
@@ -264,7 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                                 const SizedBox(height: 16),
 
-                                // Password Field
+                                // Field Kata Sandi
                                 _buildLabel('Kata Sandi'),
                                 const SizedBox(height: 4),
                                 TextFormField(
@@ -328,7 +331,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                                 const SizedBox(height: 24),
 
-                                // Register Button
+                                // Tombol Daftar
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton.icon(
@@ -368,7 +371,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   ),
                                 ),
 
-                                // Divider
+                                // Pemisah
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 24,
@@ -400,7 +403,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   ),
                                 ),
 
-                                // Google Button
+                                // Tombol Google
                                 SizedBox(
                                   width: double.infinity,
                                   child: OutlinedButton(
@@ -469,7 +472,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Login Link
+                          // Tautan Masuk
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -506,6 +509,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
+  /// Membangun widget teks label bergaya kecil untuk field form.
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -513,6 +517,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
+  /// Membangun field input teks bergaya dengan ikon dan teks hint.
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,

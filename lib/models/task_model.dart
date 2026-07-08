@@ -25,6 +25,7 @@ class TaskModel {
     required this.createdAt,
   });
 
+  /// Membuat TaskModel dari snapshot dokumen Firestore (READ).
   factory TaskModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return TaskModel(
@@ -45,6 +46,7 @@ class TaskModel {
     );
   }
 
+  /// Mengubah tugas ini menjadi map biasa untuk ditulis ke Firestore (CREATE/UPDATE).
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
@@ -59,6 +61,7 @@ class TaskModel {
     };
   }
 
+  /// Mengembalikan salinan tugas ini dengan field yang diberikan diganti.
   TaskModel copyWith({
     String? id,
     String? userId,

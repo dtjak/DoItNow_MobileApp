@@ -21,10 +21,10 @@ import 'theme/theme_controller.dart';
 
 import 'services/notification_service.dart';
 
-// Allows swipe/drag gestures (e.g. the pinned tasks PageView) to respond to
-// mouse drag as well as touch. By default Flutter's MaterialScrollBehavior
-// only accepts touch/stylus for drag-to-scroll, so testing on Windows/desktop
-// with a mouse would make PageView look completely unswipeable.
+// Membuat gestur swipe/drag (misalnya PageView tugas yang dipin) merespons
+// drag mouse selain sentuhan. Secara default MaterialScrollBehavior Flutter
+// hanya menerima sentuhan/stylus untuk drag-to-scroll, jadi pengujian di
+// Windows/desktop dengan mouse akan membuat PageView terlihat tidak bisa di-swipe.
 class AppScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
@@ -37,16 +37,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Use Indonesian month/day names for all DateFormat calls app-wide.
+  // Gunakan nama bulan/hari Indonesia untuk semua pemanggilan DateFormat di seluruh aplikasi.
   await initializeDateFormatting('id_ID', null);
   Intl.defaultLocale = 'id_ID';
 
-  // Initialize and request local notifications permissions
+  // Inisialisasi dan minta izin notifikasi lokal
   final notificationService = NotificationService();
   await notificationService.init();
   await notificationService.requestPermissions();
 
-  // Load persisted dark/light mode preference before first frame.
+  // Muat preferensi mode gelap/terang yang tersimpan sebelum frame pertama.
   await ThemeController.instance.load();
 
   runApp(const MyApp());

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// Shows a SnackBar that is guaranteed to auto-dismiss after [duration].
+/// Menampilkan SnackBar yang dijamin akan hilang otomatis setelah [duration].
 ///
-/// Flutter's built-in SnackBar ignores its `duration` and stays open until
-/// manually dismissed whenever an accessibility service (TalkBack, Narrator,
-/// VoiceOver, etc.) is active and the SnackBar has an action button. This
-/// wrapper schedules an explicit removal so the SnackBar always disappears
-/// on time regardless of accessibility settings on the test device.
+/// SnackBar bawaan Flutter mengabaikan `duration`-nya dan tetap terbuka sampai
+/// ditutup manual saat layanan aksesibilitas (TalkBack, Narrator, VoiceOver,
+/// dll.) aktif dan SnackBar memiliki tombol aksi. Wrapper ini menjadwalkan
+/// penghapusan eksplisit agar SnackBar selalu hilang tepat waktu terlepas
+/// dari pengaturan aksesibilitas pada perangkat uji.
 void showAutoDismissSnackBar(
   BuildContext? context, {
   required String message,
@@ -17,10 +17,11 @@ void showAutoDismissSnackBar(
   VoidCallback? onActionPressed,
   ScaffoldMessengerState? messenger,
 }) {
-  // Prefer an explicitly captured messenger. When a SnackBar is shown right
-  // after an `await` (e.g. a swipe-to-delete that removes the card), the
-  // card's own context can already be deactivated, so ScaffoldMessenger.of
-  // would fail to find/show anything. Pass `context: null` in that case.
+  // Lebih baik gunakan messenger yang sudah ditangkap secara eksplisit. Saat
+  // SnackBar ditampilkan tepat setelah `await` (misalnya swipe-to-delete yang
+  // menghapus kartu), context milik kartu itu sendiri bisa sudah nonaktif,
+  // sehingga ScaffoldMessenger.of gagal menemukan/menampilkan apa pun.
+  // Kirim `context: null` dalam kasus tersebut.
   messenger ??= ScaffoldMessenger.of(context!);
   messenger.hideCurrentSnackBar();
 

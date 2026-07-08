@@ -7,13 +7,13 @@ class TaskRepository {
   final CollectionReference _tasksCollection = FirebaseFirestore.instance
       .collection('tasks');
 
-  // Create a new task and return its ID
+  // Membuat tugas baru dan mengembalikan ID-nya
   Future<String> createTask(TaskModel task) async {
     final docRef = _tasksCollection.doc();
     final taskWithId = task.copyWith(id: docRef.id);
     await docRef.set(taskWithId.toMap());
     
-    // Automatically schedule notification on creation
+    // Jadwalkan notifikasi secara otomatis saat tugas dibuat
     if (task.deadline != null) {
       await NotificationService().scheduleTaskNotification(taskWithId);
     }
@@ -21,7 +21,7 @@ class TaskRepository {
     return docRef.id;
   }
 
-  // Get stream of tasks for a user
+  // Mengambil stream tugas milik seorang pengguna
   Stream<List<TaskModel>> getTasksStream(String userId) {
     return _tasksCollection.where('user_id', isEqualTo: userId).snapshots().map(
       (snapshot) {
@@ -31,11 +31,11 @@ class TaskRepository {
     );
   }
 
-  // Update task completion status
+  // Memperbarui status penyelesaian tugas
   Future<void> updateTaskCompletion(String taskId, bool isCompleted) async {
     await _tasksCollection.doc(taskId).update({'is_completed': isCompleted});
     
-    // If marked completed, cancel reminder. If reactivated, reschedule it.
+    // Jika ditandai selesai, batalkan pengingat. Jika diaktifkan kembali, jadwalkan ulang.
     if (isCompleted) {
       await NotificationService().cancelNotification(taskId);
     } else {
@@ -46,21 +46,21 @@ class TaskRepository {
           await NotificationService().scheduleTaskNotification(task);
         }
       } catch (e) {
-        debugPrint('Failed to reschedule task notification on activation: $e');
+        debugPrint('Gagal menjadwalkan ulang notifikasi tugas saat diaktifkan: $e');
       }
     }
   }
 
-  // Update task pin status
+  // Memperbarui status pin tugas
   Future<void> updateTaskPin(String taskId, bool isPinned) async {
     await _tasksCollection.doc(taskId).update({'is_pinned': isPinned});
   }
 
-  // Update task details
+  // Memperbarui detail tugas
   Future<void> updateTask(TaskModel task) async {
     await _tasksCollection.doc(task.id).update(task.toMap());
     
-    // Update or cancel notification depending on updated deadline
+    // Perbarui atau batalkan notifikasi tergantung tenggat yang diperbarui
     if (task.deadline != null && !task.isCompleted) {
       await NotificationService().scheduleTaskNotification(task);
     } else {
@@ -68,13 +68,13 @@ class TaskRepository {
     }
   }
 
-  // Delete a task
+  // Menghapus tugas
   Future<void> deleteTask(String taskId) async {
     await _tasksCollection.doc(taskId).delete();
     await NotificationService().cancelNotification(taskId);
   }
 
-  // Restore a previously deleted task (used for "Urungkan" undo actions)
+  // Memulihkan tugas yang sebelumnya dihapus (dipakai untuk aksi urungkan "Urungkan")
   Future<void> restoreTask(TaskModel task) async {
     await _tasksCollection.doc(task.id).set(task.toMap());
 

@@ -6,8 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
+  /// Membuat widget layar edit profil.
   const EditProfileScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk layar edit profil ini.
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
@@ -20,12 +22,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = true;
   String? _photoUrl;
 
+  /// Menginisialisasi state dan memicu pemuatan data profil pengguna.
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
   }
 
+  /// Mengambil data profil pengguna saat ini dari Firestore dan mengisi field form.
   Future<void> _loadUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -57,6 +61,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  /// Membuka galeri perangkat untuk memilih gambar dan mengonversinya menjadi data URL base64 untuk foto profil.
   Future<void> _pickImageFromDevice() async {
     final ImagePicker picker = ImagePicker();
     try {
@@ -88,6 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  /// Memvalidasi field form dan menyimpan data profil yang diperbarui ke Firestore.
   Future<void> _saveProfile() async {
     if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
@@ -147,6 +153,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  /// Melepaskan controller text editing saat widget dihapus dari tree.
   @override
   void dispose() {
     _nameController.dispose();
@@ -156,6 +163,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  /// Membangun scaffold layar edit profil dengan app bar dan konten form yang dapat digulir.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,6 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  /// Membangun bagian foto profil dengan gambar avatar, tombol edit, dan teks judul.
   Widget _buildProfilePictureSection() {
     ImageProvider? imageProvider;
     if (_photoUrl != null && _photoUrl!.isNotEmpty) {
@@ -290,6 +299,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  /// Membangun kolom field teks untuk mengedit nama, email, telepon, dan bio.
   Widget _buildFormFieldsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,6 +329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  /// Membangun field form teks berlabel dengan gaya dan dekorasi border yang konsisten.
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -372,6 +383,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  /// Membangun tombol simpan dan batal untuk mengirim atau membatalkan perubahan profil.
   Widget _buildActionButtons(BuildContext context) {
     return Column(
       children: [

@@ -11,6 +11,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
+  /// Membuat state yang dapat diubah untuk widget layar profil ini.
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -26,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _bio = '';
   bool _isLoading = true;
 
+  /// Menginisialisasi state dan mulai memuat profil pengguna serta preferensi notifikasi.
   @override
   void initState() {
     super.initState();
@@ -33,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadNotificationPreference();
   }
 
+  /// Memuat preferensi notifikasi aktif/nonaktif yang tersimpan dari penyimpanan lokal.
   Future<void> _loadNotificationPreference() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -40,6 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  /// Menyimpan preferensi notifikasi dan membatalkan semua notifikasi jika dinonaktifkan.
   Future<void> _setNotificationPreference(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notifications_enabled', value);
@@ -51,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  /// Mengambil data profil pengguna saat ini dari Firestore dan memperbarui state lokal.
   Future<void> _loadUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -82,6 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  /// Membangun scaffold layar profil dengan app bar, info pengguna, pengaturan, dan bagian keluar.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 left: 16.0,
                 right: 16.0,
                 top: 24.0,
-                bottom: 100.0, // Space for custom bottom nav
+                bottom: 100.0, // Ruang untuk bottom nav kustom
               ),
               child: Column(
                 children: [
@@ -125,6 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Membangun kartu bagian avatar, nama, email, telepon, dan bio pengguna.
   Widget _buildUserSection() {
     return Container(
       width: double.infinity,
@@ -268,6 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Membangun daftar item pengaturan seperti edit profil, tentang, notifikasi, dan mode gelap.
   Widget _buildSettingsSection(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -335,6 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Membangun satu baris pengaturan yang dapat diketuk dengan ikon, judul, dan widget trailing.
   Widget _buildSettingsItem({
     required IconData icon,
     required String title,
@@ -372,6 +381,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  /// Membangun tombol keluar dan bagian footer versi aplikasi.
   Widget _buildLogoutSection() {
     return Column(
       children: [

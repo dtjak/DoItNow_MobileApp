@@ -5,6 +5,7 @@ import '../widgets/custom_bottom_nav_bar.dart';
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
+  /// Membangun tata letak halaman About dengan bagian brand, fitur, dan kontak.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +31,7 @@ class AboutScreen extends StatelessWidget {
           left: 16.0,
           right: 16.0,
           top: 24.0,
-          bottom: 100.0, // Space for custom bottom nav
+          bottom: 100.0, // Ruang untuk bottom nav kustom
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,6 +52,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun bagian logo aplikasi, nama, versi, dan deskripsi singkat.
   Widget _buildBrandIdentitySection() {
     return Column(
       children: [
@@ -95,6 +97,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun daftar kartu fitur utama yang ditampilkan pada halaman About.
   Widget _buildFeaturesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,6 +136,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun satu kartu fitur dengan ikon, judul, dan deskripsi.
   Widget _buildFeatureCard({
     required IconData icon,
     required Color iconColor,
@@ -192,6 +196,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun banner gambar promosi dengan kutipan overlay.
   Widget _buildVisualAssetSection() {
     return Container(
       height: 192,
@@ -233,6 +238,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun bagian "Hubungi Kami" dengan chip kontak.
   Widget _buildContactSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,6 +261,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun satu chip kontak yang dapat disentuh dengan ikon dan label.
   Widget _buildContactChip({required IconData icon, required String label}) {
     return InkWell(
       onTap: () {},
@@ -282,6 +289,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
+  /// Membangun footer dengan teks hak cipta dan tautan kebijakan.
   Widget _buildFooterInfo() {
     return Column(
       children: [

@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  /// Membuang text controller saat layar ditutup.
   @override
   void dispose() {
     _emailController.dispose();
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Memasukkan pengguna dengan email dan password lalu menavigasi ke dashboard.
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -58,13 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Membangun UI layar masuk dengan field email/password dan opsi masuk Google.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Decorative background blobs
+          // Bulatan latar belakang dekoratif
           Positioned(
             top: 0,
             right: 0,
@@ -89,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          // Main Content
+          // Konten Utama
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -101,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Column(
                     children: [
-                      // Logo & Header
+                      // Logo & Header (judul)
                       Column(
                         children: [
                           Container(
@@ -144,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Form Card
+                      // Kartu Form
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
@@ -165,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Error Message
+                            // Pesan Error
                             if (_errorMessage != null) ...[
                               Container(
                                 width: double.infinity,
@@ -184,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                             ],
 
-                            // Email Field
+                            // Field Email
                             Text(
                               'Email',
                               style: AppTextStyles.labelSm.copyWith(
@@ -240,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 16),
 
-                            // Password Field
+                            // Field Kata Sandi
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -323,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 16),
 
-                            // Login Button
+                            // Tombol Masuk
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton.icon(
@@ -358,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
-                            // Divider
+                            // Pemisah
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 24),
                               child: Row(
@@ -388,7 +391,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
-                            // Google Login Button
+                            // Tombol Masuk dengan Google
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
@@ -454,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Register Link
+                      // Tautan Daftar
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
